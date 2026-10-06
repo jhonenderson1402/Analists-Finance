@@ -1,0 +1,1284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MABe Financeira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#C8102E;
+  --red-600:#A50D26;
+  --red-700:#7E0A1D;
+  --red-50:#FDF2F3;
+  --red-100:#FBE3E6;
+  --ink:#18181B;
+  --ink-2:#3F3F46;
+  --muted:#71717A;
+  --faint:#A1A1AA;
+  --line:#E7E5E4;
+  --line-2:#F1F0EE;
+  --bg:#FAFAF9;
+  --white:#FFFFFF;
+  --pix:#C8102E;
+  --card:#27272A;
+  --boleto:#B8B2AB;
+  --ok:#15803D;
+  --radius:10px;
+  --radius-sm:7px;
+  --shadow-sm:0 1px 2px rgba(24,24,27,.05);
+  --shadow:0 1px 2px rgba(24,24,27,.04),0 4px 16px rgba(24,24,27,.06);
+  --shadow-lg:0 24px 64px rgba(24,24,27,.18);
+  --font:"Inter",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font:14px/1.5 var(--font);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+svg{display:block;flex-shrink:0}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+/* ---------- Layout ---------- */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;padding:20px 20px 18px;border-bottom:1px solid var(--line-2)}
+.brand-mark{width:30px;height:30px;border-radius:7px;background:var(--red);display:grid;place-items:center;color:#fff}
+.brand-name{font-weight:700;font-size:14.5px;letter-spacing:-.01em;line-height:1.15}
+.brand-name small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);letter-spacing:0}
+.nav{padding:14px 12px;overflow-y:auto;flex:1}
+.nav-label{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:14px 8px 6px}
+.nav-label button{border:0;background:none;color:var(--muted);width:22px;height:22px;border-radius:5px;display:grid;place-items:center}
+.nav-label button:hover{background:var(--line-2);color:var(--red)}
+.nav a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);color:var(--ink-2);text-decoration:none;font-weight:500;font-size:13.5px;margin-bottom:1px}
+.nav a:hover{background:var(--line-2);color:var(--ink)}
+.nav a.active{background:var(--red-50);color:var(--red)}
+.nav a.active svg{color:var(--red)}
+.nav a svg{color:var(--faint)}
+.nav a .count{margin-left:auto;font-size:11.5px;color:var(--faint);font-weight:500}
+.nav a.active .count{color:var(--red)}
+.nav-empty{font-size:12.5px;color:var(--faint);padding:4px 10px 8px}
+.user-row{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line-2);padding:12px 12px 12px 16px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--red-50);color:var(--red);display:grid;place-items:center;font-weight:600;font-size:12.5px;text-transform:uppercase;flex-shrink:0}
+.user-name{flex:1;min-width:0;font-weight:500;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-row .icon-btn:hover{background:var(--red-50);color:var(--red)}
+.sidebar-foot{border-top:1px solid var(--line-2);padding:12px;display:flex;gap:6px}
+.sidebar-foot button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--white);border-radius:var(--radius-sm);padding:7px 8px;font-size:12.5px;font-weight:500;color:var(--ink-2)}
+.sidebar-foot button:hover{border-color:#D6D3D1;background:var(--bg)}
+
+.main{min-width:0}
+.scrim{display:none}
+.topbar{display:none}
+.content{max-width:1180px;margin:0 auto;padding:32px 36px 64px}
+
+/* ---------- Page header ---------- */
+.crumbs{font-size:12.5px;color:var(--muted);margin-bottom:6px;display:flex;gap:6px;align-items:center}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--red)}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.page-head h1{font-size:24px;line-height:1.2;letter-spacing:-.02em;margin:0;font-weight:700}
+.page-head p{margin:4px 0 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--white);font-weight:500;font-size:13.5px;color:var(--ink);white-space:nowrap;transition:background .12s,border-color .12s,color .12s}
+.btn:hover{background:var(--bg);border-color:#D6D3D1}
+.btn-primary{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 1px 0 rgba(0,0,0,.08) inset}
+.btn-primary:hover{background:var(--red-600);border-color:var(--red-600)}
+.btn-danger{color:var(--red)}
+.btn-danger:hover{background:var(--red-50);border-color:var(--red-100)}
+.btn-sm{height:30px;padding:0 10px;font-size:12.5px}
+.icon-btn{width:30px;height:30px;display:inline-grid;place-items:center;border-radius:var(--radius-sm);border:1px solid transparent;background:none;color:var(--muted);position:relative}
+.icon-btn:hover{background:var(--line-2);color:var(--ink)}
+.icon-btn.del:hover{background:var(--red-50);color:var(--red)}
+.btn:focus-visible,.icon-btn:focus-visible,.nav a:focus-visible,.seg button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+/* ---------- Panels ---------- */
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-2)}
+.panel-head h2{font-size:14px;font-weight:600;margin:0;letter-spacing:-.005em}
+.panel-head .sub{font-size:12.5px;color:var(--muted)}
+.panel-body{padding:20px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.kpi{padding:18px 20px}
+.kpi-label{font-size:12.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:7px}
+.kpi-label svg{color:var(--faint)}
+.kpi-value{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:8px;line-height:1.1}
+.kpi-foot{font-size:12px;color:var(--muted);margin-top:6px}
+.kpi.accent{background:var(--red);border-color:var(--red);color:#fff}
+.kpi.accent .kpi-label,.kpi.accent .kpi-foot{color:rgba(255,255,255,.78)}
+.kpi.accent .kpi-label svg{color:rgba(255,255,255,.7)}
+.delta-up{color:var(--red);font-weight:600}
+.delta-down{color:var(--ok);font-weight:600}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* Method breakdown */
+.stack{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--line-2);margin-bottom:18px}
+.stack span{display:block;height:100%}
+.stack span+span{border-left:2px solid #fff}
+.legend{display:flex;flex-direction:column;gap:2px}
+.legend-row{display:grid;grid-template-columns:auto 1fr auto 52px;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line-2)}
+.legend-row:first-child{border-top:0}
+.legend-row .name{font-weight:500}
+.legend-row .name small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.legend-row .val{font-weight:600}
+.legend-row .pct{text-align:right;color:var(--muted);font-size:12.5px}
+
+/* Method badges */
+.m-ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center}
+.m-ico.pix{background:var(--red-50);color:var(--pix)}
+.m-ico.cartao{background:#F4F4F5;color:var(--card)}
+.m-ico.boleto{background:#F5F4F2;color:#78716C}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px 0 7px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.chip.pix{background:var(--red-50);color:var(--pix)}
+.chip.cartao{background:#F4F4F5;color:var(--card)}
+.chip.boleto{background:#F5F4F2;color:#57534E}
+.chip .last4{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--muted)}
+
+/* Bars */
+.bars{display:flex;align-items:flex-end;gap:14px;height:170px;padding-top:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;min-width:0}
+.bar-col .bar{width:100%;max-width:40px;background:var(--line);border-radius:5px 5px 2px 2px;position:relative;min-height:2px;transition:background .12s}
+.bar-col.current .bar{background:var(--red)}
+.bar-col:hover .bar{background:var(--red-600)}
+.bar-col .bar-val{font-size:11px;color:var(--muted);white-space:nowrap}
+.bar-col .bar-lbl{font-size:12px;color:var(--muted);text-transform:capitalize}
+.bar-col.current .bar-lbl{color:var(--ink);font-weight:600}
+
+/* Dashboard */
+.legend-inline{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend-inline span{display:inline-flex;align-items:center;gap:6px}
+.legend-inline i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.hbars{display:flex;flex-direction:column}
+.hbar{display:grid;grid-template-columns:minmax(120px,200px) 1fr 130px 56px;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line-2);text-decoration:none;color:inherit;transition:background .12s}
+.hbar:last-child{border-bottom:0}
+.hbar:hover{background:#FCFCFB}
+.hbar:hover .hbar-name{color:var(--red)}
+.hbar-name{display:flex;align-items:center;gap:10px;font-weight:500;min-width:0}
+.hbar-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-name small{display:block;font-size:11.5px;color:var(--muted);font-weight:400}
+.hbar-track{height:22px;background:var(--line-2);border-radius:5px;overflow:hidden}
+.hbar-fill{display:flex;height:100%;border-radius:5px;overflow:hidden;min-width:2px}
+.hbar-fill span{height:100%}
+.hbar-fill span+span{border-left:2px solid #fff}
+.hbar-val{text-align:right;font-weight:600;white-space:nowrap}
+.hbar-pct{text-align:right;font-size:12.5px;color:var(--muted)}
+.rank{width:22px;height:22px;border-radius:6px;background:var(--line-2);color:var(--muted);font-size:11.5px;font-weight:600;display:grid;place-items:center;flex-shrink:0}
+.hbar:first-child .rank{background:var(--red);color:#fff}
+@media (max-width:700px){
+  .hbar{grid-template-columns:1fr auto;gap:8px 12px}
+  .hbar-track{grid-column:1/-1;grid-row:2}
+  .hbar-pct{display:none}
+}
+
+/* Flags */
+.ftag{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:5px;font-size:11.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 10%,#fff);white-space:nowrap}
+.ftag i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.ftags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.flag-strip{display:flex;gap:10px;overflow-x:auto;padding:16px 20px}
+.flag-card{flex:0 0 auto;min-width:180px;text-align:left;border:1px solid var(--line);background:var(--white);border-radius:var(--radius-sm);padding:12px 14px;position:relative;transition:border-color .12s,box-shadow .12s}
+.flag-card::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--c)}
+button.flag-card:hover{border-color:#D6D3D1}
+.flag-card.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c) inset;background:color-mix(in srgb,var(--c) 5%,#fff)}
+.flag-card.zero{opacity:.55}
+.flag-card .fc-name{display:flex;align-items:center;gap:7px;font-weight:600;font-size:13px;color:var(--ink)}
+.flag-card .fc-name i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.flag-card .fc-val{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-top:6px}
+.flag-card .fc-n{font-size:12px;color:var(--muted)}
+.flag-empty{padding:16px 20px;color:var(--muted);font-size:13px}
+.flag-pick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.flag-pick button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:99px;border:1px solid var(--line);background:var(--white);font-size:12.5px;font-weight:500;color:var(--ink-2)}
+.flag-pick button i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.flag-pick button:hover{border-color:var(--c)}
+.flag-pick button.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,#fff);color:var(--c);font-weight:600}
+.flag-pick button.on::after{content:"✓";font-size:11px}
+.flag-pick button.add{border-style:dashed;border-color:#D6D3D1;color:var(--muted);padding:0 11px 0 9px}
+.flag-pick button.add:hover,.flag-pick button.add.open{border-color:var(--red);border-style:solid;color:var(--red);background:var(--red-50)}
+.flag-pick button.add.open svg{transform:rotate(45deg)}
+.flag-pick button.add svg{transition:transform .15s}
+.flag-extra{border:1px solid var(--line);background:#FCFCFB;border-radius:var(--radius-sm);padding:12px 14px 14px;margin-top:4px;animation:rise .15s ease}
+.flag-extra .fx-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.flag-extra .fx-head b{font-size:12.5px;font-weight:600}
+.flag-extra .fx-head .icon-btn{width:24px;height:24px}
+.flag-extra .field+.field{margin-top:10px}
+.flag-extra .field label{font-size:12px;color:var(--muted)}
+.fx-row{display:flex;gap:8px}
+.fx-row input{flex:1}
+.fx-row .btn{height:38px}
+.flag-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2)}
+.flag-row:last-child{border-bottom:0}
+.flag-row input{flex:1;height:34px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 10px}
+.flag-row input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12)}
+.swatch{width:26px;height:26px;border-radius:7px;border:0;background:var(--c);flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.flag-row .cnt{font-size:12px;color:var(--muted);white-space:nowrap;min-width:80px;text-align:right}
+
+/* Linked cards */
+.linked{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.linked-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm)}
+.mini-card{width:44px;height:30px;border-radius:5px;background:linear-gradient(135deg,var(--red),var(--red-700));position:relative;flex-shrink:0}
+.mini-card::after{content:"";position:absolute;left:6px;top:9px;width:9px;height:7px;border-radius:2px;background:rgba(255,255,255,.55)}
+.linked-card .info{min-width:0;flex:1}
+.linked-card .info b{display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.linked-card .info span{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.linked-card .amt{text-align:right}
+.linked-card .amt b{display:block;font-weight:600;font-size:13px}
+.linked-card .amt span{font-size:11.5px;color:var(--muted)}
+
+/* ---------- Table ---------- */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search{position:relative}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint)}
+.search input{height:34px;width:220px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 10px 0 32px;background:var(--white)}
+.search input:focus,.field input:focus,.field select:focus,.field textarea:focus,.tb-select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.12)}
+.tb-select{height:34px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 28px 0 10px;background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%2371717A' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 10px center;appearance:none}
+.filters{display:inline-flex;background:var(--line-2);border-radius:var(--radius-sm);padding:3px;gap:2px}
+.filters button{border:0;background:none;height:28px;padding:0 10px;border-radius:5px;font-size:12.5px;font-weight:500;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.filters button:hover{color:var(--ink)}
+.filters button.on{background:var(--white);color:var(--ink);box-shadow:var(--shadow-sm)}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:10px 20px;background:#FCFCFB;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:13px 20px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tbody tr:hover td{background:#FCFCFB}
+tbody tr:last-child td{border-bottom:0}
+td.right,th.right{text-align:right}
+td.date{color:var(--muted);white-space:nowrap;font-size:13px}
+.desc b{font-weight:500;display:block}
+.desc span{font-size:12px;color:var(--muted)}
+td.amount{font-weight:600;white-space:nowrap}
+.row-actions{display:flex;gap:2px;justify-content:flex-end}
+.attach-btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;border:1px dashed #D6D3D1;background:none;color:var(--muted);font-size:12px;font-weight:500;white-space:nowrap}
+.attach-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-50)}
+.attach-btn.has{border-style:solid;border-color:var(--line);color:var(--ink-2);background:var(--white)}
+.attach-btn.has:hover{border-color:var(--red);color:var(--red)}
+.table-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--line);background:#FCFCFB;border-radius:0 0 var(--radius) var(--radius);font-size:13px;color:var(--muted)}
+.table-foot b{color:var(--ink);font-size:14px}
+
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty .e-ico{width:44px;height:44px;border-radius:10px;background:var(--red-50);color:var(--red);display:grid;place-items:center;margin:0 auto 14px}
+.empty h3{color:var(--ink);font-size:15px;margin:0 0 4px;font-weight:600}
+.empty p{margin:0 0 16px;font-size:13px}
+
+/* Units overview table */
+.unit-link{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;font-weight:500}
+.unit-link:hover{color:var(--red)}
+.u-ico{width:30px;height:30px;border-radius:7px;background:var(--line-2);display:grid;place-items:center;color:var(--ink-2)}
+.mini-stack{display:flex;height:6px;width:140px;border-radius:9px;overflow:hidden;background:var(--line-2)}
+.mini-stack span+span{border-left:1.5px solid #fff}
+
+/* ---------- Credit cards page ---------- */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.cc-item{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow-sm)}
+.cc{aspect-ratio:1.586;border-radius:11px;padding:20px 22px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(140deg,#D4142F 0%,#A50D26 55%,#6E0818 100%);display:flex;flex-direction:column;justify-content:space-between;max-width:100%}
+.cc::before{content:"";position:absolute;right:-30%;top:-60%;width:90%;height:160%;border-radius:50%;background:rgba(255,255,255,.06)}
+.cc::after{content:"";position:absolute;right:-45%;top:-20%;width:90%;height:160%;border-radius:50%;background:rgba(255,255,255,.05)}
+.cc>*{position:relative;z-index:1}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start}
+.cc-nick{font-weight:600;font-size:14px;letter-spacing:.01em}
+.cc-brand{font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.95}
+.chipset{width:38px;height:28px;border-radius:5px;background:linear-gradient(135deg,#E9D7A6,#BFA76A);position:relative}
+.chipset::before{content:"";position:absolute;inset:6px 0;border-top:1px solid rgba(0,0,0,.18);border-bottom:1px solid rgba(0,0,0,.18)}
+.chipset::after{content:"";position:absolute;inset:0 13px;border-left:1px solid rgba(0,0,0,.18);border-right:1px solid rgba(0,0,0,.18)}
+.cc-number{font-family:var(--mono);font-size:17px;letter-spacing:.12em}
+.cc-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.cc-bottom small{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-bottom:2px}
+.cc-bottom span{font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.cc-bottom .mono{font-family:var(--mono)}
+.cc-meta{padding:14px 4px 4px}
+.cc-meta-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px}
+.cc-meta-row .k{color:var(--muted)}
+.cc-meta-row .v{font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 8px;border-radius:5px;background:var(--line-2);color:var(--ink-2);font-weight:500;text-decoration:none}
+a.tag:hover{background:var(--red-50);color:var(--red)}
+.tag.none{background:none;color:var(--faint);padding-left:0}
+.cc-actions{display:flex;gap:6px;border-top:1px solid var(--line-2);padding-top:12px}
+.cc-actions .btn{flex:1;justify-content:center}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(24,24,27,.42);display:flex;align-items:flex-start;justify-content:center;padding:8vh 16px 16px;z-index:50;animation:fade .15s ease}
+.modal{background:var(--white);border-radius:12px;box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:84vh;display:flex;flex-direction:column;animation:rise .18s ease}
+.modal.wide{max-width:600px}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 0}
+.modal-head h3{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.modal-head p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.modal-body{padding:18px 22px;overflow-y:auto}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--line-2);background:#FCFCFB;border-radius:0 0 12px 12px}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+.field label{display:block;font-size:12.5px;font-weight:500;color:var(--ink-2);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;height:38px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 11px;background:var(--white);transition:border-color .12s,box-shadow .12s}
+.field select{appearance:none;background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%2371717A' stroke-width='1.5'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 12px center;padding-right:30px}
+.field textarea{height:72px;padding:9px 11px;resize:vertical}
+.field .hint{font-size:12px;color:var(--muted);margin-top:5px}
+.field input.mono{font-family:var(--mono);letter-spacing:.04em}
+.prefix{position:relative}
+.prefix span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13.5px}
+.prefix input{padding-left:34px}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--white);font-weight:500;font-size:13px;color:var(--ink-2);transition:border-color .12s,background .12s}
+.seg button svg{color:var(--faint)}
+.seg button:hover{border-color:#D6D3D1}
+.seg button.on{border-color:var(--red);background:var(--red-50);color:var(--red);box-shadow:0 0 0 1px var(--red) inset}
+.seg button.on svg{color:var(--red)}
+
+.check-list{border:1px solid var(--line);border-radius:var(--radius-sm);max-height:170px;overflow-y:auto}
+.check-list label{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-2);font-size:13.5px;cursor:pointer;margin:0;font-weight:400;color:var(--ink)}
+.check-list label:last-child{border-bottom:0}
+.check-list label:hover{background:var(--bg)}
+.check-list input{accent-color:var(--red);width:15px;height:15px;margin:0}
+
+/* Attachments */
+.drop{border:1.5px dashed #D6D3D1;border-radius:var(--radius);padding:22px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;transition:border-color .12s,background .12s}
+.drop:hover,.drop.over{border-color:var(--red);background:var(--red-50);color:var(--red)}
+.drop .d-ico{width:38px;height:38px;border-radius:9px;background:var(--line-2);display:grid;place-items:center;margin:0 auto 10px;color:var(--ink-2)}
+.drop b{color:var(--ink);font-weight:600}
+.files{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.file{display:flex;align-items:center;gap:12px;padding:9px 10px 9px 12px;border:1px solid var(--line);border-radius:var(--radius-sm)}
+.file-ico{width:34px;height:34px;border-radius:7px;display:grid;place-items:center;font-size:9.5px;font-weight:700;letter-spacing:.03em;background:var(--line-2);color:var(--ink-2)}
+.file-ico.pdf{background:var(--red-50);color:var(--red)}
+.file-info{flex:1;min-width:0}
+.file-info b{display:block;font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-info span{font-size:12px;color:var(--muted)}
+
+.reveal-box{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);padding:4px 14px}
+.reveal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-2)}
+.reveal-row:last-child{border-bottom:0}
+.reveal-row .k{color:var(--muted);font-size:12.5px}
+.reveal-row .v{font-family:var(--mono);font-size:13.5px;display:flex;align-items:center;gap:6px}
+.notice{display:flex;gap:10px;font-size:12.5px;color:var(--ink-2);background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--radius-sm);padding:10px 12px;margin-top:14px}
+.notice svg{color:#B45309;margin-top:1px}
+
+/* Toast */
+.toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{background:var(--ink);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:rise .18s ease}
+.toast svg{color:#86EFAC}
+
+/* ---------- Login ---------- */
+.login{min-height:100vh;display:grid;grid-template-columns:minmax(380px,46%) 1fr;background:var(--white)}
+.login-side{background:linear-gradient(150deg,#D4142F 0%,#A50D26 55%,#6E0818 100%);color:#fff;padding:48px 56px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.login-side::before{content:"";position:absolute;right:-35%;bottom:-40%;width:110%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
+.login-side::after{content:"";position:absolute;right:-20%;bottom:-25%;width:80%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,255,255,.1)}
+.login-side>*{position:relative;z-index:1}
+.wordmark{display:flex;align-items:center;gap:12px}
+.wordmark .mk{width:40px;height:40px;border-radius:9px;background:#fff;color:var(--red);display:grid;place-items:center}
+.wordmark b{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.wordmark span{display:block;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin-top:4px}
+.login-side h2{font-size:30px;line-height:1.2;letter-spacing:-.02em;font-weight:600;margin:0 0 12px;max-width:400px}
+.login-side p{margin:0;opacity:.8;max-width:380px;font-size:14.5px}
+.login-feats{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;opacity:.85}
+.login-feats span{display:inline-flex;align-items:center;gap:7px}
+.login-main{display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.login-box{width:100%;max-width:360px}
+.login-box h1{font-size:24px;letter-spacing:-.02em;margin:0 0 6px;font-weight:700}
+.login-box>p{color:var(--muted);margin:0 0 28px}
+.login-box .field{margin-bottom:16px}
+.login-box .field input{height:42px}
+.pw{position:relative}
+.pw input{padding-right:42px}
+.pw button{position:absolute;right:4px;top:50%;transform:translateY(-50%)}
+.login-box .btn-primary{width:100%;justify-content:center;height:42px;margin-top:6px;font-size:14px}
+.login-err{display:flex;gap:8px;align-items:center;background:var(--red-50);border:1px solid var(--red-100);color:var(--red-600);font-size:13px;padding:9px 12px;border-radius:var(--radius-sm);margin-bottom:16px}
+.login-foot{margin-top:28px;font-size:12px;color:var(--faint);text-align:center}
+.mob-brand{display:none}
+@media (max-width:820px){
+  .login{grid-template-columns:1fr}
+  .login-side{display:none}
+  .mob-brand{display:flex;margin-bottom:32px}
+  .mob-brand .mk{background:var(--red);color:#fff}
+  .mob-brand b{color:var(--ink)}
+  .mob-brand span{color:var(--muted);opacity:1}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;z-index:40;transform:translateX(-100%);transition:transform .2s ease;box-shadow:var(--shadow-lg)}
+  .app.nav-open .sidebar{transform:none}
+  .app.nav-open .scrim{display:block}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(24,24,27,.35);z-index:35}
+  .topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+  .content{padding:22px 16px 48px}
+  .grid-2{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .kpis{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .search input{width:100%}
+  .search{flex:1}
+  .page-head h1{font-size:21px}
+  th,td{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+<div class="login" id="login" hidden>
+  <aside class="login-side">
+    <div class="wordmark"><div class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><div><b>MABe</b><span>Financeira</span></div></div>
+    <div><h2>Controle financeiro das suas unidades em um só lugar.</h2><p>Lançamentos, recibos e cartões organizados por unidade, com resumo atualizado a cada gasto.</p></div>
+    <div class="login-feats"><span data-i="pix"></span>Pix <span data-i="card"></span>Cartão <span data-i="boleto"></span>Boleto</div>
+  </aside>
+  <div class="login-main">
+    <form class="login-box" id="loginForm" autocomplete="on" novalidate>
+      <div class="wordmark mob-brand"><div class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><div><b>MABe</b><span>Financeira</span></div></div>
+      <h1 id="lTitle">Entrar</h1>
+      <p id="lSub">Informe seu usuário e senha para acessar.</p>
+      <div class="login-err" id="lErr" hidden></div>
+      <div class="field"><label for="lUser">Usuário</label><input id="lUser" autocomplete="username" maxlength="30" autocapitalize="none" spellcheck="false"></div>
+      <div class="field"><label for="lPass">Senha</label><div class="pw"><input id="lPass" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="icon-btn" id="lEye" aria-label="Mostrar senha"><span data-i="eye"></span></button></div></div>
+      <div class="field" id="lConfWrap" hidden><label for="lConf">Confirmar senha</label><input id="lConf" type="password" autocomplete="new-password" maxlength="64"></div>
+      <button class="btn btn-primary" type="submit" id="lBtn">Entrar</button>
+      <div class="login-foot">MABe Financeira · acesso restrito</div>
+    </form>
+  </div>
+</div>
+<div class="app" id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div>
+      <div class="brand-name">MABe<small>Financeira</small></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="user-row">
+      <div class="avatar" id="uAvatar"></div>
+      <div class="user-name" id="sideUser"></div>
+      <button class="icon-btn" id="btnLogout" title="Sair" aria-label="Sair"><span data-i="logout"></span></button>
+    </div>
+    <div class="sidebar-foot">
+      <button id="btnExport" title="Exportar backup"><span data-i="download"></span>Backup</button>
+      <button id="btnImport" title="Restaurar backup"><span data-i="upload"></span>Restaurar</button>
+      <input type="file" id="importInput" accept="application/json" hidden>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Menu"><span data-i="menu"></span></button>
+      <b>MABe Financeira</b>
+    </div>
+    <div class="content" id="view"></div>
+  </main>
+</div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="fileInput" multiple hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ================= Ícones ================= */
+const ICONS = {
+  chart:'<path d="M3 3v18h18"/><path d="M7 15h4M7 10h9M7 5h6"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  building:'<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/><path d="M16 9h2a2 2 0 0 1 2 2v10"/><path d="M2 21h20"/><path d="M8 7h4M8 11h4M8 15h4"/>',
+  card:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/><path d="M6.5 15h4"/>',
+  pix:'<path d="M12 2.8 21.2 12 12 21.2 2.8 12Z"/><path d="m7.6 12 2.6-2.6a2.5 2.5 0 0 1 3.6 0L16.4 12l-2.6 2.6a2.5 2.5 0 0 1-3.6 0Z"/>',
+  boleto:'<path d="M3 5v14M6.5 5v14M9 5v14M12.5 5v14M15 5v14M18.5 5v14M21 5v14"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  clip:'<path d="m21 11.5-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l8-8"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>',
+  edit:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  download:'<path d="M12 4v11M7 10l5 5 5-5M4 20h16"/>',
+  upload:'<path d="M12 16V5M7 10l5-5 5 5M4 20h16"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  wallet:'<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M21 10h-5a2 2 0 0 0 0 4h5Z"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  receipt:'<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2Z"/><path d="M9 8h6M9 12h6"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  check:'<path d="m5 12 5 5 9-10"/>',
+  open:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+  file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/>',
+  logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+};
+const ic = (n, s=16, w=1.8) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+document.querySelectorAll('[data-i]').forEach(el => el.outerHTML = ic(el.dataset.i, {menu:20, eye:16, logout:16}[el.dataset.i] || 14));
+
+/* ================= Constantes ================= */
+const METHODS = {
+  pix:    {label:'Pix',    icon:'pix',    color:'var(--pix)'},
+  cartao: {label:'Cartão', icon:'card',   color:'var(--card)'},
+  boleto: {label:'Boleto', icon:'boleto', color:'var(--boleto)'},
+};
+const FLAG_COLORS = ['#C8102E','#2563EB','#059669','#D97706','#7C3AED','#0891B2','#DB2777','#52525B','#65A30D','#B45309'];
+const CATEGORIES = ['Aluguel','Água e energia','Internet e telefonia','Materiais','Manutenção','Folha de pagamento','Impostos e taxas','Serviços','Marketing','Transporte','Alimentação','Outros'];
+
+/* ================= Persistência (Supabase) ================= */
+const SB_URL = 'https://htaxutoyzfhsttbldltj.supabase.co';
+const SB_KEY = 'sb_publishable_hiPJHRiGb3UIcZdqcqqDtw_mcIvC9YJ';
+const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{storage:window.sessionStorage, persistSession:true, autoRefreshToken:true}});
+const TABLES = ['units', 'cards', 'expenses', 'flags'];
+let S = {units:[], cards:[], expenses:[], flags:[]};
+let synced = {};   // tabela -> Map(id -> JSON salvo no servidor)
+const normalize = () => {
+  TABLES.forEach(t => S[t] ||= []);
+  // Cartões guardam só bandeira e 4 últimos números
+  S.cards.forEach(c => { if (c.number) c.last4 ||= String(c.number).replace(/\D/g, '').slice(-4); delete c.number; delete c.cvv; delete c.expiry; });
+};
+async function loadAll() {
+  const res = await Promise.all(TABLES.map(t => sb.from(t).select('id,data')));
+  res.forEach((r, i) => { if (r.error) throw r.error; });
+  TABLES.forEach((t, i) => {
+    S[t] = res[i].data.map(r => ({...r.data, id:r.id})).sort((a,b) => (a.createdAt||0) - (b.createdAt||0));
+    synced[t] = new Map(S[t].map(x => [x.id, JSON.stringify(x)]));
+  });
+  normalize();
+}
+async function sync() {
+  for (const t of TABLES) {
+    const cur = new Map(S[t].map(x => [x.id, JSON.stringify(x)]));
+    const prev = synced[t] || new Map();
+    const up = [...cur].filter(([id, j]) => prev.get(id) !== j).map(([id, j]) => ({id, data:JSON.parse(j), updated_at:new Date().toISOString()}));
+    const del = [...prev.keys()].filter(id => !cur.has(id));
+    if (up.length) { const {error} = await sb.from(t).upsert(up); if (error) throw error; }
+    if (del.length) { const {error} = await sb.from(t).delete().in('id', del); if (error) throw error; }
+    synced[t] = cur;
+  }
+}
+let saving = Promise.resolve();
+const save = () => (saving = saving.then(sync).catch(e => { console.error(e); toast('Não foi possível salvar no servidor. Verifique a conexão.', true); }));
+
+const MAX_FILE = 20 * 1024 * 1024;
+const DB = {
+  put: async (id, blob) => { const {error} = await sb.storage.from('recibos').upload(id, blob, {upsert:true, contentType:blob.type || 'application/octet-stream'}); if (error) throw error; },
+  get: async id => { const {data, error} = await sb.storage.from('recibos').download(id); if (error) throw error; return data; },
+  del: async id => { const {error} = await sb.storage.from('recibos').remove([id]); if (error) throw error; },
+};
+
+/* ================= Utilidades ================= */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl = v => (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const brlShort = v => v >= 1e6 ? 'R$ ' + (v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1}) + ' mi' : v >= 1e4 ? 'R$ ' + (v/1e3).toLocaleString('pt-BR',{maximumFractionDigits:1}) + ' mil' : brl(v);
+const fdate = d => { if(!d) return ''; const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; };
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
+const monthKey = d => d.slice(0,7);
+const monthLabel = (k, long) => new Date(k + '-15').toLocaleDateString('pt-BR', long ? {month:'long', year:'numeric'} : {month:'short'}).replace('.', '');
+const fsize = b => b < 1024 ? b + ' B' : b < 1048576 ? (b/1024).toFixed(0) + ' KB' : (b/1048576).toFixed(1) + ' MB';
+const digits = s => String(s||'').replace(/\D/g, '');
+const sum = arr => arr.reduce((a, e) => a + (+e.amount || 0), 0);
+const parseMoney = s => { s = String(s).trim().replace(/[^\d,.-]/g, ''); if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); return parseFloat(s) || 0; };
+const unit = id => S.units.find(u => u.id === id);
+const card = id => S.cards.find(c => c.id === id);
+const unitExpenses = id => S.expenses.filter(e => e.unitId === id);
+const flag = id => S.flags.find(f => f.id === id);
+const flagTag = f => `<span class="ftag" style="--c:${f.color}"><i></i>${esc(f.name)}</span>`;
+function createFlag(name) {
+  name = name.trim().replace(/\s+/g, ' ').slice(0, 30);
+  if (!name) return null;
+  const ex = S.flags.find(f => f.name.toLowerCase() === name.toLowerCase());
+  if (ex) return ex;
+  const f = {id:uid(), name, color:FLAG_COLORS[S.flags.length % FLAG_COLORS.length]};
+  S.flags.push(f); save();
+  return f;
+}
+
+const BRANDS = ['Visa','Mastercard','Elo','Amex','Hipercard','Diners','Outra'];
+const cBrand = c => c.brand && c.brand !== 'Outra' ? c.brand : 'Cartão';
+const cLast4 = c => c.last4 || '----';
+
+function toast(msg, err) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = (err ? '' : ic('check', 15, 2.2)) + esc(msg);
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+/* ================= Modal ================= */
+function modal({title, sub, body, foot, wide, onMount}) {
+  const o = document.createElement('div');
+  o.className = 'overlay';
+  o.innerHTML = `<div class="modal ${wide?'wide':''}" role="dialog" aria-modal="true">
+    <div class="modal-head"><div><h3>${esc(title)}</h3>${sub?`<p>${esc(sub)}</p>`:''}</div>
+    <button class="icon-btn" data-close aria-label="Fechar">${ic('x',16)}</button></div>
+    <div class="modal-body">${body}</div>
+    ${foot ? `<div class="modal-foot">${foot}</div>` : ''}</div>`;
+  const close = () => { o.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  o.addEventListener('mousedown', e => { if (e.target === o) close(); });
+  o.querySelectorAll('[data-close]').forEach(b => b.onclick = close);
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(o);
+  const first = o.querySelector('input:not([type=hidden]):not([type=checkbox]),select,textarea');
+  if (first) setTimeout(() => first.focus(), 30);
+  onMount && onMount(o, close);
+  return {el:o, close};
+}
+
+function confirmDialog(title, text, okLabel, onOk) {
+  modal({
+    title, body:`<p style="margin:0;color:var(--ink-2)">${text}</p>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>${esc(okLabel)}</button>`,
+    onMount:(o, close) => o.querySelector('[data-ok]').onclick = () => { onOk(); close(); }
+  });
+}
+
+/* ================= Navegação ================= */
+function route() {
+  const h = location.hash.replace(/^#\/?/, '').split('/');
+  return {page: h[0] || 'dashboard', id: h[1]};
+}
+function renderNav() {
+  const r = route();
+  const units = [...S.units].sort((a,b) => a.name.localeCompare(b.name, 'pt-BR'));
+  document.getElementById('nav').innerHTML = `
+    <a href="#/dashboard" class="${r.page==='dashboard'?'active':''}">${ic('chart')}Dashboard</a>
+    <a href="#/overview" class="${r.page==='overview'?'active':''}">${ic('grid')}Visão geral</a>
+    <a href="#/cards" class="${r.page==='cards'?'active':''}">${ic('card')}Cartões de crédito<span class="count">${S.cards.length||''}</span></a>
+    <div class="nav-label">Unidades <button id="navAddUnit" title="Nova unidade" aria-label="Nova unidade">${ic('plus',14,2)}</button></div>
+    ${units.length ? units.map(u => `<a href="#/unit/${u.id}" class="${r.page==='unit'&&r.id===u.id?'active':''}">${ic('building')}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.name)}</span><span class="count">${unitExpenses(u.id).length||''}</span></a>`).join('')
+      : '<div class="nav-empty">Nenhuma unidade cadastrada.</div>'}`;
+  document.getElementById('navAddUnit').onclick = () => unitForm();
+}
+function render() {
+  renderNav();
+  const r = route();
+  const v = document.getElementById('view');
+  if (r.page === 'unit' && unit(r.id)) v.innerHTML = viewUnit(r.id);
+  else if (r.page === 'cards') v.innerHTML = viewCards();
+  else if (r.page === 'overview') v.innerHTML = viewOverview();
+  else v.innerHTML = viewDashboard();
+  bindView();
+  document.getElementById('app').classList.remove('nav-open');
+}
+window.addEventListener('hashchange', () => { filters = {q:'', method:'all', month:'all', flag:'all'}; render(); window.scrollTo(0,0); });
+
+/* ================= Componentes de análise ================= */
+function methodTotals(list) {
+  const t = {pix:0, cartao:0, boleto:0}, c = {pix:0, cartao:0, boleto:0};
+  list.forEach(e => { t[e.method] += +e.amount || 0; c[e.method]++; });
+  return {t, c, total: t.pix + t.cartao + t.boleto};
+}
+function stackBar(mt, cls='stack') {
+  if (!mt.total) return `<div class="${cls}"></div>`;
+  return `<div class="${cls}">${Object.keys(METHODS).filter(k => mt.t[k] > 0).map(k => `<span style="width:${mt.t[k]/mt.total*100}%;background:${METHODS[k].color}" title="${METHODS[k].label}: ${brl(mt.t[k])}"></span>`).join('')}</div>`;
+}
+function methodPanel(list) {
+  const mt = methodTotals(list);
+  return `<div class="panel"><div class="panel-head"><h2>Por forma de pagamento</h2><span class="sub">${list.length} lançamento${list.length===1?'':'s'}</span></div>
+    <div class="panel-body">${stackBar(mt)}<div class="legend">
+    ${Object.entries(METHODS).map(([k, m]) => `<div class="legend-row">
+      <div class="m-ico ${k}">${ic(m.icon, 16)}</div>
+      <div class="name">${m.label}<small>${mt.c[k]} lançamento${mt.c[k]===1?'':'s'}</small></div>
+      <div class="val num">${brl(mt.t[k])}</div>
+      <div class="pct num">${mt.total ? (mt.t[k]/mt.total*100).toFixed(1).replace('.', ',') : '0,0'}%</div>
+    </div>`).join('')}</div></div></div>`;
+}
+function monthsPanel(list) {
+  const now = new Date();
+  const keys = [];
+  for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); keys.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`); }
+  const vals = keys.map(k => sum(list.filter(e => monthKey(e.date) === k)));
+  const max = Math.max(...vals, 1);
+  return `<div class="panel"><div class="panel-head"><h2>Últimos 6 meses</h2><span class="sub">Total mensal</span></div>
+    <div class="panel-body"><div class="bars">${keys.map((k, i) => `<div class="bar-col ${i===5?'current':''}" title="${monthLabel(k,true)}: ${brl(vals[i])}">
+      <span class="bar-val num">${vals[i] ? brlShort(vals[i]) : '–'}</span>
+      <div class="bar" style="height:${Math.max(vals[i]/max*120, 2)}px"></div>
+      <span class="bar-lbl">${monthLabel(k)}</span></div>`).join('')}</div></div></div>`;
+}
+function kpiRow(list, extra) {
+  const total = sum(list);
+  const t = today(), cur = monthKey(t);
+  const pd = new Date(); pd.setDate(1); pd.setMonth(pd.getMonth() - 1);
+  const prev = `${pd.getFullYear()}-${String(pd.getMonth()+1).padStart(2,'0')}`;
+  const curV = sum(list.filter(e => monthKey(e.date) === cur));
+  const prevV = sum(list.filter(e => monthKey(e.date) === prev));
+  let delta = 'Sem comparação com o mês anterior';
+  if (prevV > 0) { const p = (curV - prevV) / prevV * 100; delta = `<span class="${p>0?'delta-up':'delta-down'}">${p>0?'+':''}${p.toFixed(1).replace('.', ',')}%</span> vs. ${monthLabel(prev)}`; }
+  const withRec = list.filter(e => (e.attachments||[]).length).length;
+  return `<div class="kpis">
+    <div class="panel kpi accent"><div class="kpi-label">${ic('wallet',15)}Total gasto</div><div class="kpi-value num">${brl(total)}</div><div class="kpi-foot">${list.length} lançamento${list.length===1?'':'s'} no total</div></div>
+    <div class="panel kpi"><div class="kpi-label">${ic('calendar',15)}Mês atual</div><div class="kpi-value num">${brl(curV)}</div><div class="kpi-foot">${delta}</div></div>
+    ${extra || `<div class="panel kpi"><div class="kpi-label">${ic('trend',15)}Ticket médio</div><div class="kpi-value num">${brl(list.length ? total/list.length : 0)}</div><div class="kpi-foot">Média por lançamento</div></div>`}
+    <div class="panel kpi"><div class="kpi-label">${ic('receipt',15)}Recibos anexados</div><div class="kpi-value num">${withRec}<span style="font-size:15px;color:var(--faint);font-weight:500"> / ${list.length}</span></div><div class="kpi-foot">${list.length - withRec ? `${list.length - withRec} sem comprovante` : 'Todos comprovados'}</div></div>
+  </div>`;
+}
+
+function flagPanel(list, clickable) {
+  const rows = S.flags.map(f => { const l = list.filter(e => (e.flagIds||[]).includes(f.id)); return {f, n:l.length, t:sum(l)}; })
+    .filter(r => !clickable || r.n > 0)
+    .sort((a,b) => b.t - a.t || a.f.name.localeCompare(b.f.name, 'pt-BR'));
+  const body = !S.flags.length ? `<div class="flag-empty">Nenhuma flag criada ainda. Ao lançar um gasto, digite o nome de uma flag (ex.: Insumos) para criá-la.</div>`
+    : !rows.length ? `<div class="flag-empty">Nenhum lançamento desta unidade tem flag.</div>`
+    : `<div class="flag-strip">${rows.map(r => `<${clickable?'button':'div'} class="flag-card ${r.n?'':'zero'} ${clickable && filters.flag===r.f.id?'on':''}" style="--c:${r.f.color}" ${clickable?`data-flag="${r.f.id}" title="Filtrar lançamentos por esta flag"`:''}>
+        <div class="fc-name"><i></i>${esc(r.f.name)}</div>
+        <div class="fc-val num">${brl(r.t)}</div>
+        <div class="fc-n">${r.n} lançamento${r.n===1?'':'s'}</div></${clickable?'button':'div'}>`).join('')}</div>`;
+  const active = clickable && flag(filters.flag);
+  return `<div class="panel" style="margin-bottom:16px"><div class="panel-head"><h2>Flags</h2><div class="actions">
+    ${active ? `<button class="btn btn-sm" data-flag="${active.id}">${ic('x',13)}Limpar filtro: ${esc(active.name)}</button>` : ''}
+    <button class="btn btn-sm" data-act="flags">${ic('edit',13)}Gerenciar flags</button></div></div>${body}</div>`;
+}
+
+/* ================= Dashboard ================= */
+let dashPeriod = 'all';
+const PERIODS = {month:'Este mês', '3m':'Últimos 3 meses', year:'Este ano', all:'Todo o período'};
+function inPeriod(e) {
+  if (dashPeriod === 'all') return true;
+  const n = new Date();
+  if (dashPeriod === 'month') return monthKey(e.date) === monthKey(today());
+  if (dashPeriod === 'year') return e.date.slice(0,4) === String(n.getFullYear());
+  const s = new Date(n.getFullYear(), n.getMonth() - 2, 1);
+  return e.date >= `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}-01`;
+}
+function viewDashboard() {
+  const head = (actions='') => `<div class="page-head"><div><h1>Dashboard</h1><p>Resumo dos gastos por unidade.</p></div><div class="actions">${actions}</div></div>`;
+  if (!S.units.length) return head() + `<div class="panel"><div class="empty"><div class="e-ico">${ic('chart',20)}</div><h3>Nenhuma unidade cadastrada</h3>
+    <p>Cadastre unidades e lance gastos para ver o resumo aqui.</p><button class="btn btn-primary" data-act="add-unit">${ic('plus',15,2)}Nova unidade</button></div></div>`;
+  const list = S.expenses.filter(inPeriod);
+  const total = sum(list);
+  const curV = sum(S.expenses.filter(e => monthKey(e.date) === monthKey(today())));
+  const rows = S.units.map(u => ({u, mt: methodTotals(list.filter(e => e.unitId === u.id)), n: list.filter(e => e.unitId === u.id).length}))
+    .sort((a,b) => b.mt.total - a.mt.total || a.u.name.localeCompare(b.u.name, 'pt-BR'));
+  const max = Math.max(...rows.map(r => r.mt.total), 1);
+  const top = rows[0].mt.total > 0 ? rows[0] : null;
+  const noRec = list.filter(e => !(e.attachments||[]).length).length;
+  const pctTxt = v => total ? (v/total*100).toFixed(1).replace('.', ',') + '%' : '0,0%';
+  return head(`<select class="tb-select" id="dPeriod">${Object.entries(PERIODS).map(([k,l]) => `<option value="${k}" ${dashPeriod===k?'selected':''}>${l}</option>`).join('')}</select>`) + `
+    <div class="kpis">
+      <div class="panel kpi accent"><div class="kpi-label">${ic('wallet',15)}Total gasto</div><div class="kpi-value num">${brl(total)}</div><div class="kpi-foot">${PERIODS[dashPeriod]} · ${list.length} lançamento${list.length===1?'':'s'}</div></div>
+      <div class="panel kpi"><div class="kpi-label">${ic('calendar',15)}Mês atual</div><div class="kpi-value num">${brl(curV)}</div><div class="kpi-foot">${monthLabel(monthKey(today()), true).replace(/^./, c => c.toUpperCase())}</div></div>
+      <div class="panel kpi"><div class="kpi-label">${ic('building',15)}Unidade que mais gastou</div><div class="kpi-value" style="font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-block:3px">${top ? esc(top.u.name) : '–'}</div><div class="kpi-foot">${top ? `${brl(top.mt.total)} · ${pctTxt(top.mt.total)} do total` : 'Sem gastos no período'}</div></div>
+      <div class="panel kpi"><div class="kpi-label">${ic('receipt',15)}Sem recibo</div><div class="kpi-value num">${noRec}</div><div class="kpi-foot">${noRec ? `lançamento${noRec===1?'':'s'} sem comprovante` : 'Todos comprovados'}</div></div>
+    </div>
+    ${flagPanel(list, false)}
+    <div class="panel">
+      <div class="panel-head" style="flex-wrap:wrap"><h2>Gastos por unidade</h2>
+        <div class="legend-inline">${Object.values(METHODS).map(m => `<span><i style="background:${m.color}"></i>${m.label}</span>`).join('')}</div></div>
+      <div class="hbars">${rows.map((r, i) => `<a class="hbar" href="#/unit/${r.u.id}" title="${Object.entries(METHODS).map(([k,m]) => `${m.label}: ${brl(r.mt.t[k])}`).join(' · ')}">
+        <div class="hbar-name"><span class="rank">${i+1}</span><div style="min-width:0"><span style="display:block">${esc(r.u.name)}</span><small>${r.n} lançamento${r.n===1?'':'s'}</small></div></div>
+        <div class="hbar-track">${r.mt.total ? `<div class="hbar-fill" style="width:${r.mt.total/max*100}%">${Object.keys(METHODS).filter(k => r.mt.t[k] > 0).map(k => `<span style="width:${r.mt.t[k]/r.mt.total*100}%;background:${METHODS[k].color}"></span>`).join('')}</div>` : ''}</div>
+        <div class="hbar-val num">${brl(r.mt.total)}</div>
+        <div class="hbar-pct num">${pctTxt(r.mt.total)}</div>
+      </a>`).join('')}</div>
+      <div class="table-foot"><span>${S.units.length} unidade${S.units.length===1?'':'s'}</span><span>Total: <b class="num">${brl(total)}</b></span></div>
+    </div>`;
+}
+
+/* ================= Visão geral ================= */
+function viewOverview() {
+  if (!S.units.length) return `
+    <div class="page-head"><div><h1>Visão geral</h1><p>Acompanhe os gastos de todas as unidades.</p></div></div>
+    <div class="panel"><div class="empty"><div class="e-ico">${ic('building',20)}</div><h3>Comece cadastrando uma unidade</h3>
+    <p>Cada unidade tem seu próprio painel, lançamentos e cartões associados.</p>
+    <button class="btn btn-primary" data-act="add-unit">${ic('plus',15,2)}Nova unidade</button></div></div>`;
+  const all = S.expenses;
+  const rows = S.units.map(u => { const l = unitExpenses(u.id); return {u, l, mt: methodTotals(l), cards: S.cards.filter(c => (c.unitIds||[]).includes(u.id)).length}; }).sort((a,b) => b.mt.total - a.mt.total);
+  return `
+    <div class="page-head"><div><h1>Visão geral</h1><p>Consolidado de ${S.units.length} unidade${S.units.length===1?'':'s'}.</p></div>
+      <div class="actions"><button class="btn" data-act="add-unit">${ic('plus',15,2)}Nova unidade</button></div></div>
+    ${kpiRow(all, `<div class="panel kpi"><div class="kpi-label">${ic('building',15)}Unidades</div><div class="kpi-value num">${S.units.length}</div><div class="kpi-foot">${S.cards.length} cartão${S.cards.length===1?'':'es'} cadastrado${S.cards.length===1?'':'s'}</div></div>`)}
+    <div class="grid-2">${methodPanel(all)}${monthsPanel(all)}</div>
+    <div class="panel"><div class="panel-head"><h2>Unidades</h2><span class="sub">Ordenadas por total gasto</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Unidade</th><th>Distribuição</th><th class="right">Lançamentos</th><th class="right">Cartões</th><th class="right">Total</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td><a class="unit-link" href="#/unit/${r.u.id}"><span class="u-ico">${ic('building',15)}</span>${esc(r.u.name)}</a></td>
+      <td>${stackBar(r.mt, 'mini-stack')}</td><td class="right num">${r.l.length}</td><td class="right num">${r.cards}</td><td class="right amount num">${brl(r.mt.total)}</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+
+/* ================= Unidade ================= */
+let filters = {q:'', method:'all', month:'all', flag:'all'};
+function viewUnit(id) {
+  const u = unit(id), list = unitExpenses(id);
+  const linked = S.cards.filter(c => (c.unitIds||[]).includes(id));
+  const months = [...new Set(list.map(e => monthKey(e.date)))].sort().reverse();
+  return `
+    <div class="crumbs"><a href="#/overview">Unidades</a><span>/</span><span>${esc(u.name)}</span></div>
+    <div class="page-head"><div><h1>${esc(u.name)}</h1>${u.desc ? `<p>${esc(u.desc)}</p>` : ''}</div>
+      <div class="actions">
+        <button class="btn" data-act="edit-unit">${ic('edit',15)}Editar</button>
+        <button class="btn btn-danger" data-act="del-unit">${ic('trash',15)}Excluir</button>
+        <button class="btn btn-primary" data-act="add-exp">${ic('plus',15,2)}Novo gasto</button>
+      </div></div>
+    ${flagPanel(list, true)}
+    ${kpiRow(list)}
+    <div class="grid-2">${methodPanel(list)}${monthsPanel(list)}</div>
+    <div class="panel" style="margin-bottom:16px"><div class="panel-head"><h2>Cartões associados</h2>
+      <button class="btn btn-sm" data-act="link-cards">${ic('link',14)}Associar cartões</button></div>
+      <div class="panel-body">${linked.length ? `<div class="linked">${linked.map(c => { const used = list.filter(e => e.method==='cartao' && e.cardId===c.id); return `
+        <div class="linked-card"><div class="mini-card"></div><div class="info"><b>${esc(c.nickname || c.holder)}</b><span>${cBrand(c)} •••• ${cLast4(c)}</span></div>
+        <div class="amt"><b class="num">${brl(sum(used))}</b><span>${used.length} uso${used.length===1?'':'s'}</span></div></div>`; }).join('')}</div>`
+      : `<div style="color:var(--muted);font-size:13px">Nenhum cartão associado a esta unidade. ${S.cards.length ? '' : '<a href="#/cards" style="color:var(--red)">Cadastre um cartão</a> para começar.'}</div>`}</div></div>
+    <div class="panel">
+      <div class="panel-head" style="flex-wrap:wrap"><h2>Lançamentos</h2>
+        <div class="toolbar">
+          ${flag(filters.flag) ? `<button class="btn btn-sm" data-flag="${filters.flag}" title="Remover filtro" style="--c:${flag(filters.flag).color};border-color:var(--c);color:var(--c)">${ic('x',13)}${esc(flag(filters.flag).name)}</button>` : ''}
+          <div class="search">${ic('search',15)}<input id="fq" placeholder="Buscar descrição ou categoria" value="${esc(filters.q)}"></div>
+          <div class="filters" id="fm">${[['all','Todos'],...Object.entries(METHODS).map(([k,m])=>[k,m.label])].map(([k,l]) => `<button data-m="${k}" class="${filters.method===k?'on':''}">${k!=='all'?ic(METHODS[k].icon,13):''}${l}</button>`).join('')}</div>
+          <select class="tb-select" id="fmo"><option value="all">Todos os meses</option>${months.map(m => `<option value="${m}" ${filters.month===m?'selected':''}>${monthLabel(m,true)}</option>`).join('')}</select>
+        </div></div>
+      <div id="expTable">${expTable(id)}</div>
+    </div>`;
+}
+function expTable(id) {
+  const all = unitExpenses(id);
+  if (!all.length) return `<div class="empty"><div class="e-ico">${ic('receipt',20)}</div><h3>Nenhum gasto lançado</h3><p>Adicione o primeiro gasto desta unidade.</p><button class="btn btn-primary" data-act="add-exp">${ic('plus',15,2)}Novo gasto</button></div>`;
+  const q = filters.q.trim().toLowerCase();
+  const list = all.filter(e => (filters.method==='all' || e.method===filters.method) && (filters.month==='all' || monthKey(e.date)===filters.month)
+      && (filters.flag==='all' || (e.flagIds||[]).includes(filters.flag))
+      && (!q || (e.desc+' '+(e.category||'')+' '+(e.notes||'')+' '+(e.flagIds||[]).map(id => flag(id)?.name||'').join(' ')).toLowerCase().includes(q)))
+    .sort((a,b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+  if (!list.length) return `<div class="empty"><h3>Nenhum resultado</h3><p>Ajuste os filtros para ver outros lançamentos.</p></div>`;
+  return `<div class="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Pagamento</th><th class="right">Valor</th><th>Recibos</th><th></th></tr></thead><tbody>
+    ${list.map(e => { const m = METHODS[e.method], c = e.cardId && card(e.cardId), n = (e.attachments||[]).length; return `<tr>
+      <td class="date num">${fdate(e.date)}</td>
+      <td class="desc"><b>${esc(e.desc)}</b><span>${esc(e.category || '')}${e.notes ? ' · ' + esc(e.notes) : ''}</span>${(e.flagIds||[]).some(flag) ? `<div class="ftags">${e.flagIds.map(flag).filter(Boolean).map(flagTag).join('')}</div>` : ''}</td>
+      <td><span class="chip ${e.method}">${ic(m.icon,13,2)}${m.label}${e.method==='cartao' && c ? ` <span class="last4">•${cLast4(c)}</span>` : ''}</span></td>
+      <td class="right amount num">${brl(+e.amount)}</td>
+      <td><button class="attach-btn ${n?'has':''}" data-att="${e.id}">${ic('clip',13)}${n ? `${n} arquivo${n===1?'':'s'}` : 'Anexar recibo'}</button></td>
+      <td><div class="row-actions"><button class="icon-btn" data-edit="${e.id}" title="Editar" aria-label="Editar">${ic('edit',15)}</button><button class="icon-btn del" data-del="${e.id}" title="Excluir" aria-label="Excluir">${ic('trash',15)}</button></div></td>
+    </tr>`; }).join('')}</tbody></table></div>
+    <div class="table-foot"><span>${list.length} de ${all.length} lançamento${all.length===1?'':'s'}</span><span>Total filtrado: <b class="num">${brl(sum(list))}</b></span></div>`;
+}
+
+/* ================= Cartões ================= */
+function viewCards() {
+  const head = `<div class="page-head"><div><h1>Cartões de crédito</h1><p>Cadastre cartões e associe às unidades para acompanhar o uso.</p></div>
+    <div class="actions"><button class="btn btn-primary" data-act="add-card">${ic('plus',15,2)}Novo cartão</button></div></div>`;
+  if (!S.cards.length) return head + `<div class="panel"><div class="empty"><div class="e-ico">${ic('card',20)}</div><h3>Nenhum cartão cadastrado</h3><p>Os cartões cadastrados aparecem aqui e podem ser vinculados às unidades.</p><button class="btn btn-primary" data-act="add-card">${ic('plus',15,2)}Novo cartão</button></div></div>`;
+  return head + `<div class="cards-grid">${S.cards.map(c => {
+    const used = S.expenses.filter(e => e.method==='cartao' && e.cardId===c.id);
+    const units = (c.unitIds||[]).map(unit).filter(Boolean);
+    return `<div class="cc-item">
+      <div class="cc"><div class="cc-top"><span class="cc-nick">${esc(c.nickname || 'Cartão')}</span><span class="cc-brand">${cBrand(c)}</span></div>
+        <div class="chipset"></div>
+        <div class="cc-number">•••• •••• •••• ${esc(cLast4(c))}</div>
+        <div class="cc-bottom"><div><small>Titular</small><span>${esc(c.holder)}</span></div></div></div>
+      <div class="cc-meta">
+        <div class="cc-meta-row"><span class="k">Total utilizado</span><span class="v num">${brl(sum(used))}</span></div>
+        <div class="cc-meta-row"><span class="k">Lançamentos</span><span class="v num">${used.length}</span></div>
+        <div class="tags">${units.length ? units.map(u => `<a class="tag" href="#/unit/${u.id}">${ic('building',12)}${esc(u.name)}</a>`).join('') : '<span class="tag none">Sem unidade associada</span>'}</div>
+        <div class="cc-actions">
+          <button class="btn btn-sm" data-cedit="${c.id}">${ic('edit',14)}Editar</button>
+          <button class="btn btn-sm btn-danger" data-cdel="${c.id}">${ic('trash',14)}Excluir</button>
+        </div></div></div>`;
+  }).join('')}</div>`;
+}
+
+/* ================= Formulários ================= */
+function unitForm(u) {
+  modal({
+    title: u ? 'Editar unidade' : 'Nova unidade', sub: u ? '' : 'Ex.: filial, loja, obra, centro de custo.',
+    body:`<div class="form-grid"><div class="field full"><label>Nome da unidade</label><input id="uName" value="${esc(u?.name)}" maxlength="80"></div>
+      <div class="field full"><label>Descrição <span style="color:var(--faint);font-weight:400">(opcional)</span></label><input id="uDesc" value="${esc(u?.desc)}" maxlength="140"></div></div>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>${u?'Salvar':'Criar unidade'}</button>`,
+    onMount:(o, close) => {
+      const go = () => {
+        const name = o.querySelector('#uName').value.trim();
+        if (!name) return o.querySelector('#uName').focus();
+        const desc = o.querySelector('#uDesc').value.trim();
+        if (u) Object.assign(u, {name, desc});
+        else { u = {id:uid(), name, desc, createdAt:Date.now()}; S.units.push(u); }
+        save(); close(); toast(u ? 'Unidade salva' : 'Unidade criada');
+        location.hash = '#/unit/' + u.id; render();
+      };
+      o.querySelector('[data-ok]').onclick = go;
+      o.querySelectorAll('input').forEach(i => i.onkeydown = e => e.key==='Enter' && go());
+    }
+  });
+}
+
+function expenseForm(unitId, e) {
+  let method = e?.method || 'pix';
+  const linked = S.cards.filter(c => (c.unitIds||[]).includes(unitId));
+  const others = S.cards.filter(c => !(c.unitIds||[]).includes(unitId));
+  const opt = c => `<option value="${c.id}" ${e?.cardId===c.id?'selected':''}>${esc(c.nickname || c.holder)} — ${cBrand(c)} •••• ${cLast4(c)}</option>`;
+  const cardSel = S.cards.length ? `<select id="eCard">${linked.length ? `<optgroup label="Associados a esta unidade">${linked.map(opt).join('')}</optgroup>` : ''}${others.length ? `<optgroup label="${linked.length?'Outros cartões':'Cartões cadastrados'}">${others.map(opt).join('')}</optgroup>` : ''}</select>
+    ${others.length ? '<div class="hint">Cartões de outras unidades serão associados automaticamente a esta.</div>' : ''}`
+    : `<div class="hint" style="margin-top:0">Nenhum cartão cadastrado. <a href="#/cards" style="color:var(--red)">Cadastrar cartão</a></div>`;
+  modal({
+    title: e ? 'Editar gasto' : 'Novo gasto', sub: unit(unitId).name,
+    body:`<div class="form-grid">
+      <div class="field full"><label>Descrição</label><input id="eDesc" value="${esc(e?.desc)}" maxlength="120" placeholder="Ex.: Conta de energia — setembro"></div>
+      <div class="field"><label>Valor</label><div class="prefix"><span>R$</span><input id="eAmt" class="num" inputmode="decimal" placeholder="0,00" value="${e ? (+e.amount).toLocaleString('pt-BR',{minimumFractionDigits:2}) : ''}"></div></div>
+      <div class="field"><label>Data</label><input id="eDate" type="date" value="${e?.date || today()}"></div>
+      <div class="field full"><label>Categoria</label><select id="eCat">${CATEGORIES.map(c => `<option ${(e?.category||'Outros')===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="field full"><label>Forma de pagamento</label><div class="seg" id="eMethod">${Object.entries(METHODS).map(([k,m]) => `<button type="button" data-m="${k}" class="${method===k?'on':''}">${ic(m.icon,20)}${m.label}</button>`).join('')}</div></div>
+      <div class="field full" id="cardField" ${method==='cartao'?'':'hidden'}><label>Cartão utilizado</label>${cardSel}</div>
+      <div class="field full"><label>Flags <span style="color:var(--faint);font-weight:400">(opcional)</span></label>
+        <div class="flag-pick" id="eFlags"></div>
+        <div class="flag-extra" id="eExtra" ${e?.notes ? '' : 'hidden'}>
+          <div class="fx-head"><b>Nova flag e observação</b><button type="button" class="icon-btn" id="eExtraClose" aria-label="Fechar">${ic('x',14)}</button></div>
+          <div class="field"><label>Nome da nova flag</label><div class="fx-row"><input id="eFlagNew" maxlength="30" placeholder="Ex.: Insumos"><button type="button" class="btn btn-sm btn-primary" id="eFlagAdd">${ic('plus',13,2)}Adicionar</button></div></div>
+          <div class="field"><label>Observação</label><input id="eNotes" value="${esc(e?.notes)}" maxlength="140" placeholder="Nº da nota, fornecedor, parcela..."></div>
+        </div>
+      </div>
+    </div>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>${e?'Salvar alterações':'Adicionar gasto'}</button>`,
+    onMount:(o, close) => {
+      const picked = new Set((e?.flagIds||[]).filter(flag));
+      const drawFlags = () => {
+        const open = !o.querySelector('#eExtra').hidden;
+        o.querySelector('#eFlags').innerHTML = S.flags.map(f => `<button type="button" data-f="${f.id}" class="${picked.has(f.id)?'on':''}" style="--c:${f.color}"><i></i>${esc(f.name)}</button>`).join('')
+          + `<button type="button" class="add ${open?'open':''}" id="eFlagPlus" title="Adicionar nova flag e observação">${ic('plus',13,2.2)}Nova flag</button>`;
+        o.querySelector('#eFlagPlus').onclick = () => { const x = o.querySelector('#eExtra'); x.hidden = !x.hidden; drawFlags(); if (!x.hidden) o.querySelector('#eFlagNew').focus(); };
+        o.querySelectorAll('#eFlags button[data-f]').forEach(b => b.onclick = () => { picked.has(b.dataset.f) ? picked.delete(b.dataset.f) : picked.add(b.dataset.f); drawFlags(); });
+      };
+      drawFlags();
+      const fNew = o.querySelector('#eFlagNew');
+      const addNew = () => { const f = createFlag(fNew.value); if (f) { picked.add(f.id); fNew.value = ''; drawFlags(); fNew.focus(); } };
+      fNew.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); addNew(); } };
+      o.querySelector('#eFlagAdd').onclick = addNew;
+      o.querySelector('#eExtraClose').onclick = () => { o.querySelector('#eExtra').hidden = true; drawFlags(); };
+      o.querySelectorAll('#eMethod button').forEach(b => b.onclick = () => {
+        method = b.dataset.m;
+        o.querySelectorAll('#eMethod button').forEach(x => x.classList.toggle('on', x === b));
+        o.querySelector('#cardField').hidden = method !== 'cartao';
+      });
+      o.querySelector('[data-ok]').onclick = () => {
+        const desc = o.querySelector('#eDesc').value.trim();
+        const amount = parseMoney(o.querySelector('#eAmt').value);
+        const date = o.querySelector('#eDate').value;
+        if (!desc) return o.querySelector('#eDesc').focus();
+        if (!(amount > 0)) return o.querySelector('#eAmt').focus();
+        if (!date) return o.querySelector('#eDate').focus();
+        let cardId = null;
+        if (method === 'cartao') {
+          const sel = o.querySelector('#eCard');
+          if (!sel) return toast('Cadastre um cartão primeiro', true);
+          cardId = sel.value;
+          const c = card(cardId); c.unitIds = c.unitIds || [];
+          if (!c.unitIds.includes(unitId)) c.unitIds.push(unitId);
+        }
+        if (fNew.value.trim()) { const f = createFlag(fNew.value); if (f) picked.add(f.id); }
+        const data = {desc, amount, date, method, cardId, category:o.querySelector('#eCat').value, notes:o.querySelector('#eNotes').value.trim(), flagIds:[...picked]};
+        if (e) Object.assign(e, data);
+        else S.expenses.push({id:uid(), unitId, attachments:[], createdAt:Date.now(), ...data});
+        save(); close(); render(); toast(e ? 'Gasto atualizado' : 'Gasto adicionado');
+      };
+    }
+  });
+}
+
+function cardForm(c) {
+  const units = [...S.units].sort((a,b) => a.name.localeCompare(b.name, 'pt-BR'));
+  modal({
+    title: c ? 'Editar cartão' : 'Novo cartão',
+    body:`<div class="form-grid">
+      <div class="field full"><label>Apelido do cartão</label><input id="cNick" value="${esc(c?.nickname)}" maxlength="40" placeholder="Ex.: Corporativo Itaú"></div>
+      <div class="field full"><label>Nome impresso no cartão</label><input id="cHolder" value="${esc(c?.holder)}" maxlength="40" style="text-transform:uppercase"></div>
+      <div class="field"><label>Bandeira</label><select id="cBrandSel">${BRANDS.map(b => `<option ${(c?.brand||'Visa')===b?'selected':''}>${b}</option>`).join('')}</select></div>
+      <div class="field"><label>4 últimos números</label><input id="cLast" class="mono" inputmode="numeric" autocomplete="off" value="${esc(c?.last4)}" placeholder="0000" maxlength="4"></div>
+      <div class="field full"><label>Unidades associadas</label>${units.length ? `<div class="check-list">${units.map(u => `<label><input type="checkbox" value="${u.id}" ${(c?.unitIds||[]).includes(u.id)?'checked':''}>${esc(u.name)}</label>`).join('')}</div>` : '<div class="hint" style="margin-top:0">Nenhuma unidade cadastrada ainda.</div>'}</div>
+    </div>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>${c?'Salvar':'Cadastrar cartão'}</button>`,
+    onMount:(o, close) => {
+      const l4 = o.querySelector('#cLast');
+      l4.oninput = () => l4.value = digits(l4.value).slice(0,4);
+      o.querySelector('[data-ok]').onclick = () => {
+        const holder = o.querySelector('#cHolder').value.trim().toUpperCase();
+        if (!holder) return o.querySelector('#cHolder').focus();
+        if (l4.value.length !== 4) { toast('Informe os 4 últimos números', true); return l4.focus(); }
+        const data = {nickname:o.querySelector('#cNick').value.trim(), holder, brand:o.querySelector('#cBrandSel').value, last4:l4.value, unitIds:[...o.querySelectorAll('.check-list input:checked')].map(i => i.value)};
+        if (c) Object.assign(c, data); else S.cards.push({id:uid(), createdAt:Date.now(), ...data});
+        save(); close(); render(); toast(c ? 'Cartão atualizado' : 'Cartão cadastrado');
+      };
+    }
+  });
+}
+
+function linkCards(unitId) {
+  if (!S.cards.length) { location.hash = '#/cards'; return toast('Cadastre um cartão primeiro', true); }
+  modal({
+    title:'Associar cartões', sub: unit(unitId).name,
+    body:`<div class="check-list" style="max-height:300px">${S.cards.map(c => `<label><input type="checkbox" value="${c.id}" ${(c.unitIds||[]).includes(unitId)?'checked':''}><span style="flex:1">${esc(c.nickname || c.holder)}</span><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">${cBrand(c)} •••• ${cLast4(c)}</span></label>`).join('')}</div>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>Salvar</button>`,
+    onMount:(o, close) => o.querySelector('[data-ok]').onclick = () => {
+      o.querySelectorAll('input').forEach(i => { const c = card(i.value); c.unitIds = (c.unitIds||[]).filter(x => x !== unitId); if (i.checked) c.unitIds.push(unitId); });
+      save(); close(); render(); toast('Associações atualizadas');
+    }
+  });
+}
+
+function flagsManager() {
+  modal({
+    title:'Gerenciar flags', sub:'Clique na cor para trocá-la. Excluir uma flag não apaga os lançamentos.',
+    body:`<div id="fmList"></div>
+      <div class="field" style="margin-top:14px"><label>Nova flag</label><input id="fmNew" maxlength="30" placeholder="Digite o nome e pressione Enter"></div>`,
+    foot:`<button class="btn btn-primary" data-close>Concluir</button>`,
+    onMount:(o) => {
+      const draw = () => {
+        o.querySelector('#fmList').innerHTML = S.flags.length ? S.flags.map(f => { const n = S.expenses.filter(e => (e.flagIds||[]).includes(f.id)).length; return `
+          <div class="flag-row"><button class="swatch" data-c="${f.id}" style="--c:${f.color}" title="Trocar cor" aria-label="Trocar cor"></button>
+          <input data-n="${f.id}" value="${esc(f.name)}" maxlength="30">
+          <span class="cnt">${n} lançamento${n===1?'':'s'}</span>
+          <button class="icon-btn del" data-d="${f.id}" title="Excluir" aria-label="Excluir flag">${ic('trash',15)}</button></div>`; }).join('')
+          : '<div style="color:var(--muted);font-size:13px">Nenhuma flag criada.</div>';
+        o.querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
+          const f = flag(b.dataset.c);
+          f.color = FLAG_COLORS[(FLAG_COLORS.indexOf(f.color) + 1) % FLAG_COLORS.length];
+          save(); draw(); render();
+        });
+        o.querySelectorAll('[data-n]').forEach(i => i.onchange = () => {
+          const f = flag(i.dataset.n), name = i.value.trim().replace(/\s+/g, ' ');
+          if (!name || S.flags.some(x => x !== f && x.name.toLowerCase() === name.toLowerCase())) { toast(name ? 'Já existe uma flag com esse nome' : 'O nome não pode ficar vazio', true); i.value = f.name; return; }
+          f.name = name; save(); render(); toast('Flag renomeada');
+        });
+        o.querySelectorAll('[data-d]').forEach(b => b.onclick = () => {
+          const f = flag(b.dataset.d);
+          confirmDialog('Excluir flag', `A flag <b>${esc(f.name)}</b> será removida de todos os lançamentos. Os lançamentos continuam registrados.`, 'Excluir flag', () => {
+            S.flags = S.flags.filter(x => x.id !== f.id);
+            S.expenses.forEach(e => { if (e.flagIds) e.flagIds = e.flagIds.filter(x => x !== f.id); });
+            if (filters.flag === f.id) filters.flag = 'all';
+            save(); draw(); render(); toast('Flag excluída');
+          });
+        });
+      };
+      draw();
+      const nw = o.querySelector('#fmNew');
+      nw.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); if (createFlag(nw.value)) { nw.value = ''; draw(); render(); } } };
+    }
+  });
+}
+
+/* ================= Recibos ================= */
+function extOf(name) { const m = /\.([a-z0-9]+)$/i.exec(name); return m ? m[1].toUpperCase().slice(0,4) : 'ARQ'; }
+function attachments(expId) {
+  const e = S.expenses.find(x => x.id === expId);
+  const listHtml = () => (e.attachments||[]).length ? e.attachments.map(a => `<div class="file">
+      <div class="file-ico ${/pdf/i.test(a.type)||/\.pdf$/i.test(a.name)?'pdf':''}">${extOf(a.name)}</div>
+      <div class="file-info"><b title="${esc(a.name)}">${esc(a.name)}</b><span>${fsize(a.size)} · ${new Date(a.addedAt).toLocaleDateString('pt-BR')}</span></div>
+      <button class="icon-btn" data-open="${a.id}" title="Abrir">${ic('open',15)}</button>
+      <button class="icon-btn" data-dl="${a.id}" title="Baixar">${ic('download',15)}</button>
+      <button class="icon-btn del" data-rm="${a.id}" title="Remover">${ic('trash',15)}</button></div>`).join('')
+    : '<div style="text-align:center;color:var(--faint);font-size:13px;padding:6px 0">Nenhum arquivo anexado.</div>';
+  modal({
+    title:'Recibos e comprovantes', sub:`${e.desc} · ${brl(+e.amount)}`, wide:true,
+    body:`<div class="drop" id="drop"><div class="d-ico">${ic('upload',18)}</div><b>Clique para selecionar</b> ou arraste os arquivos aqui<br><span style="font-size:12px">PDF, imagens ou qualquer outro formato — vários de uma vez</span></div><div class="files" id="files">${listHtml()}</div>`,
+    foot:`<button class="btn" data-close>Concluir</button>`,
+    onMount:o => {
+      const refresh = () => { o.querySelector('#files').innerHTML = listHtml(); };
+      const add = async files => {
+        if (files.length) toast(files.length === 1 ? 'Enviando arquivo…' : `Enviando ${files.length} arquivos…`);
+        for (const f of files) {
+          if (f.size > MAX_FILE) { toast(`${f.name} passa de 20 MB e não foi enviado`, true); files = files.filter(x => x !== f); continue; }
+          const id = uid();
+          try { await DB.put(id, f); } catch(err) { toast('Erro ao enviar ' + f.name, true); files = files.filter(x => x !== f); continue; }
+          e.attachments.push({id, name:f.name, type:f.type, size:f.size, addedAt:Date.now()});
+        }
+        save(); refresh(); render();
+        if (files.length) toast(files.length === 1 ? 'Arquivo anexado' : `${files.length} arquivos anexados`);
+      };
+      const drop = o.querySelector('#drop'), input = document.getElementById('fileInput');
+      drop.onclick = () => { input.value = ''; input.onchange = () => add([...input.files]); input.click(); };
+      drop.ondragover = ev => { ev.preventDefault(); drop.classList.add('over'); };
+      drop.ondragleave = () => drop.classList.remove('over');
+      drop.ondrop = ev => { ev.preventDefault(); drop.classList.remove('over'); add([...ev.dataTransfer.files]); };
+      o.querySelector('#files').onclick = async ev => {
+        const b = ev.target.closest('button'); if (!b) return;
+        const id = b.dataset.open || b.dataset.dl || b.dataset.rm;
+        const a = e.attachments.find(x => x.id === id);
+        if (b.dataset.rm) {
+          e.attachments = e.attachments.filter(x => x.id !== id);
+          DB.del(id).catch(()=>{}); save(); refresh(); render(); toast('Arquivo removido');
+          return;
+        }
+        const blob = await DB.get(id).catch(() => null);
+        if (!blob) return toast('Não foi possível baixar o arquivo', true);
+        const url = URL.createObjectURL(blob);
+        if (b.dataset.open) window.open(url, '_blank');
+        else { const l = document.createElement('a'); l.href = url; l.download = a.name; document.body.appendChild(l); l.click(); l.remove(); }
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      };
+    }
+  });
+}
+
+/* ================= Eventos da view ================= */
+function bindView() {
+  const v = document.getElementById('view'), r = route();
+  v.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    const a = b.dataset.act;
+    if (a === 'add-unit') unitForm();
+    if (a === 'edit-unit') unitForm(unit(r.id));
+    if (a === 'add-exp') expenseForm(r.id);
+    if (a === 'link-cards') linkCards(r.id);
+    if (a === 'add-card') cardForm();
+    if (a === 'flags') flagsManager();
+    if (a === 'del-unit') {
+      const u = unit(r.id), n = unitExpenses(u.id).length;
+      confirmDialog('Excluir unidade', `A unidade <b>${esc(u.name)}</b>${n ? ` e seus ${n} lançamento${n===1?'':'s'} (com recibos)` : ''} será${n?'ão':''} excluída${n?'s':''}. Essa ação não pode ser desfeita.`, 'Excluir unidade', () => {
+        unitExpenses(u.id).forEach(e => (e.attachments||[]).forEach(a => DB.del(a.id).catch(()=>{})));
+        S.expenses = S.expenses.filter(e => e.unitId !== u.id);
+        S.cards.forEach(c => c.unitIds = (c.unitIds||[]).filter(x => x !== u.id));
+        S.units = S.units.filter(x => x.id !== u.id);
+        save(); location.hash = '#/overview'; toast('Unidade excluída');
+      });
+    }
+  });
+
+  v.querySelectorAll('[data-flag]').forEach(b => b.onclick = () => {
+    filters.flag = filters.flag === b.dataset.flag ? 'all' : b.dataset.flag;
+    render();
+    if (filters.flag !== 'all') v.querySelector('#expTable')?.closest('.panel').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  const dp = v.querySelector('#dPeriod');
+  if (dp) dp.onchange = () => { dashPeriod = dp.value; render(); };
+
+  if (r.page === 'unit' && unit(r.id)) {
+    const refreshTable = () => { v.querySelector('#expTable').innerHTML = expTable(r.id); bindTable(); };
+    const fq = v.querySelector('#fq');
+    if (fq) fq.oninput = () => { filters.q = fq.value; refreshTable(); };
+    v.querySelectorAll('#fm button').forEach(b => b.onclick = () => { filters.method = b.dataset.m; v.querySelectorAll('#fm button').forEach(x => x.classList.toggle('on', x === b)); refreshTable(); });
+    const fmo = v.querySelector('#fmo');
+    if (fmo) fmo.onchange = () => { filters.month = fmo.value; refreshTable(); };
+    const bindTable = () => {
+      const t = v.querySelector('#expTable');
+      t.querySelectorAll('[data-act="add-exp"]').forEach(b => b.onclick = () => expenseForm(r.id));
+      t.querySelectorAll('[data-att]').forEach(b => b.onclick = () => attachments(b.dataset.att));
+      t.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => expenseForm(r.id, S.expenses.find(e => e.id === b.dataset.edit)));
+      t.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+        const e = S.expenses.find(x => x.id === b.dataset.del);
+        confirmDialog('Excluir gasto', `<b>${esc(e.desc)}</b> (${brl(+e.amount)}) será excluído junto com seus recibos.`, 'Excluir', () => {
+          (e.attachments||[]).forEach(a => DB.del(a.id).catch(()=>{}));
+          S.expenses = S.expenses.filter(x => x.id !== e.id); save(); render(); toast('Gasto excluído');
+        });
+      });
+    };
+    bindTable();
+  }
+
+  if (r.page === 'cards') {
+    v.querySelectorAll('[data-cedit]').forEach(b => b.onclick = () => cardForm(card(b.dataset.cedit)));
+    v.querySelectorAll('[data-cdel]').forEach(b => b.onclick = () => {
+      const c = card(b.dataset.cdel), n = S.expenses.filter(e => e.cardId === c.id).length;
+      confirmDialog('Excluir cartão', `O cartão <b>${esc(c.nickname || c.holder)}</b> •••• ${cLast4(c)} será removido.${n ? ` Os ${n} lançamento${n===1?'':'s'} feitos com ele continuam registrados como pagamento em cartão.` : ''}`, 'Excluir cartão', () => {
+        S.cards = S.cards.filter(x => x.id !== c.id);
+        S.expenses.forEach(e => { if (e.cardId === c.id) e.cardId = null; });
+        save(); render(); toast('Cartão excluído');
+      });
+    });
+  }
+}
+
+/* ================= Backup ================= */
+const blobToB64 = b => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(b); });
+document.getElementById('btnExport').onclick = async () => {
+  const files = {};
+  for (const e of S.expenses) for (const a of (e.attachments||[])) { const b = await DB.get(a.id).catch(() => null); if (b) files[a.id] = await blobToB64(b); }
+  const blob = new Blob([JSON.stringify({version:1, exportedAt:new Date().toISOString(), data:S, files})], {type:'application/json'});
+  const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = `backup-financeiro-${today()}.json`; document.body.appendChild(l); l.click(); l.remove();
+  toast('Backup exportado');
+};
+document.getElementById('btnImport').onclick = () => document.getElementById('importInput').click();
+document.getElementById('importInput').onchange = async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!j.data || !Array.isArray(j.data.units)) throw 0;
+    confirmDialog('Restaurar backup', 'Os dados atuais serão substituídos pelos dados do backup. Deseja continuar?', 'Restaurar', async () => {
+      for (const [id, d] of Object.entries(j.files || {})) await DB.put(id, await (await fetch(d)).blob());
+      S = j.data; normalize(); save(); location.hash = '#/overview'; render(); toast('Backup restaurado');
+    });
+  } catch(e) { toast('Arquivo de backup inválido', true); }
+  ev.target.value = '';
+};
+
+/* ================= Login ================= */
+const userEmail = u => u.trim().toLowerCase() + '@mabe.app';
+const userName = user => user?.user_metadata?.username || (user?.email || '').split('@')[0];
+let firstAccess = false;
+async function enterApp(user) {
+  const btn = document.getElementById('lBtn');
+  btn.disabled = true; btn.textContent = 'Carregando dados…';
+  try { await loadAll(); }
+  catch(e) { showLogin(); return loginErr('Não foi possível carregar os dados. Verifique a conexão e tente novamente.'); }
+  finally { btn.disabled = false; }
+  const name = userName(user);
+  document.getElementById('login').hidden = true;
+  document.getElementById('app').hidden = false;
+  document.getElementById('sideUser').textContent = name;
+  document.getElementById('uAvatar').textContent = name.slice(0, 2);
+  render();
+}
+async function showLogin() {
+  document.getElementById('app').hidden = true;
+  document.getElementById('login').hidden = false;
+  document.getElementById('lErr').hidden = true;
+  document.getElementById('lPass').value = document.getElementById('lConf').value = '';
+  const btn = document.getElementById('lBtn');
+  btn.disabled = true; btn.textContent = 'Conectando…';
+  const {data, error} = await sb.rpc('mabe_has_users');
+  btn.disabled = false;
+  if (error) loginErr('Não foi possível conectar ao servidor. Verifique a conexão e recarregue a página.');
+  firstAccess = !error && data === false;
+  document.getElementById('lTitle').textContent = firstAccess ? 'Criar acesso' : 'Entrar';
+  document.getElementById('lSub').textContent = firstAccess ? 'Primeiro acesso: defina o usuário e a senha que serão usados para entrar.' : 'Informe seu usuário e senha para acessar.';
+  document.getElementById('lConfWrap').hidden = !firstAccess;
+  btn.textContent = firstAccess ? 'Criar acesso e entrar' : 'Entrar';
+  document.getElementById('lPass').autocomplete = firstAccess ? 'new-password' : 'current-password';
+  setTimeout(() => document.getElementById(document.getElementById('lUser').value ? 'lPass' : 'lUser').focus(), 30);
+}
+const loginErr = msg => { const e = document.getElementById('lErr'); e.innerHTML = ic('alert', 15) + esc(msg); e.hidden = false; };
+document.getElementById('lEye').onclick = e => {
+  const p = document.getElementById('lPass'), show = p.type === 'password';
+  p.type = show ? 'text' : 'password';
+  e.currentTarget.innerHTML = ic(show ? 'eyeOff' : 'eye', 16);
+};
+document.getElementById('loginForm').onsubmit = async ev => {
+  ev.preventDefault();
+  const user = document.getElementById('lUser').value.trim().toLowerCase();
+  const pass = document.getElementById('lPass').value;
+  document.getElementById('lErr').hidden = true;
+  if (!user) { loginErr('Informe o usuário.'); return document.getElementById('lUser').focus(); }
+  if (!pass) { loginErr('Informe a senha.'); return document.getElementById('lPass').focus(); }
+  const btn = document.getElementById('lBtn'), label = btn.textContent;
+  if (firstAccess) {
+    if (!/^[a-z0-9._-]{3,30}$/.test(user)) return loginErr('O usuário deve ter de 3 a 30 caracteres, usando letras, números, ponto, hífen ou sublinhado (sem espaços).');
+    if (pass.length < 6) return loginErr('A senha precisa ter pelo menos 6 caracteres.');
+    if (pass !== document.getElementById('lConf').value) return loginErr('As senhas não conferem.');
+  }
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  try {
+    if (firstAccess) {
+      const {error} = await sb.rpc('mabe_create_first_user', {p_username:user, p_password:pass});
+      if (error) {
+        if (/ACESSO_JA_CRIADO/.test(error.message)) { await showLogin(); return loginErr('O acesso já foi criado por outra pessoa. Entre com o usuário e a senha definidos.'); }
+        return loginErr('Não foi possível criar o acesso. Tente novamente.');
+      }
+    }
+    const {data, error} = await sb.auth.signInWithPassword({email:userEmail(user), password:pass});
+    if (error) { loginErr('Usuário ou senha incorretos.'); document.getElementById('lPass').value = ''; return document.getElementById('lPass').focus(); }
+    firstAccess = false;
+    await enterApp(data.user);
+  } catch(e) {
+    loginErr('Não foi possível conectar ao servidor. Verifique a conexão.');
+  } finally { btn.disabled = false; if (!document.getElementById('login').hidden) btn.textContent = firstAccess ? 'Criar acesso e entrar' : 'Entrar'; }
+};
+document.getElementById('btnLogout').onclick = async () => {
+  document.querySelectorAll('.overlay').forEach(o => o.remove());
+  await saving;
+  await sb.auth.signOut();
+  S = {units:[], cards:[], expenses:[], flags:[]}; synced = {};
+  showLogin();
+};
+
+/* ================= Início ================= */
+document.getElementById('menuBtn').onclick = () => document.getElementById('app').classList.add('nav-open');
+document.getElementById('scrim').onclick = () => document.getElementById('app').classList.remove('nav-open');
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible' || document.getElementById('app').hidden || document.querySelector('.overlay')) return;
+  try { await saving; await loadAll(); render(); } catch(e) {}
+});
+(async () => {
+  const {data:{session}} = await sb.auth.getSession();
+  if (session) enterApp(session.user); else showLogin();
+})();
+</script>
+</body>
+</html>
