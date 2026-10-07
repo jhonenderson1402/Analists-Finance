@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Analitcs Financeira</title>
+<title>Analitics Financeira</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -363,6 +363,11 @@ a.tag:hover{background:var(--red-50);color:var(--red)}
 .toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:60}
 .toast{background:var(--ink);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:rise .18s ease}
 .toast svg{color:#86EFAC}
+.toast.err{background:var(--red-600);max-width:420px}
+.toast.err svg{color:#fff}
+.sync-bar{display:flex;align-items:center;gap:10px;background:#FFFBEB;border:1px solid #FDE68A;color:#78350F;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px}
+.sync-bar svg{color:#B45309}
+.sync-bar .btn{margin-left:auto}
 
 /* ---------- Login ---------- */
 .login{min-height:100vh;display:grid;grid-template-columns:minmax(380px,46%) 1fr;background:var(--white)}
@@ -425,13 +430,13 @@ a.tag:hover{background:var(--red-50);color:var(--red)}
 <body>
 <div class="login" id="login" hidden>
   <aside class="login-side">
-    <div class="wordmark"><div class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><div><b>Analistics</b><span>Financeira</span></div></div>
+    <div class="wordmark"><div class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><div><b>Analitics</b><span>Financeira</span></div></div>
     <div><h2>Controle financeiro das suas unidades em um só lugar.</h2><p>Lançamentos, recibos e cartões organizados por unidade, com resumo atualizado a cada gasto.</p></div>
     <div class="login-feats"><span data-i="pix"></span>Pix <span data-i="card"></span>Cartão <span data-i="boleto"></span>Boleto</div>
   </aside>
   <div class="login-main">
     <form class="login-box" id="loginForm" autocomplete="on" novalidate>
-      <div class="wordmark mob-brand"><div class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><div><b>Analistics</b><span>Financeira</span></div></div>
+      <div class="wordmark mob-brand"><div class="mk"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div><div><b>Analitics</b><span>Financeira</span></div></div>
       <h1 id="lTitle">Entrar</h1>
       <p id="lSub">Informe seu usuário e senha para acessar.</p>
       <div class="login-err" id="lErr" hidden></div>
@@ -439,7 +444,7 @@ a.tag:hover{background:var(--red-50);color:var(--red)}
       <div class="field"><label for="lPass">Senha</label><div class="pw"><input id="lPass" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="icon-btn" id="lEye" aria-label="Mostrar senha"><span data-i="eye"></span></button></div></div>
       <div class="field" id="lConfWrap" hidden><label for="lConf">Confirmar senha</label><input id="lConf" type="password" autocomplete="new-password" maxlength="64"></div>
       <button class="btn btn-primary" type="submit" id="lBtn">Entrar</button>
-      <div class="login-foot">Analitcs Financeira · acesso restrito</div>
+      <div class="login-foot">Analitics Financeira · acesso restrito</div>
     </form>
   </div>
 </div>
@@ -467,7 +472,10 @@ a.tag:hover{background:var(--red-50);color:var(--red)}
       <button class="icon-btn" id="menuBtn" aria-label="Menu"><span data-i="menu"></span></button>
       <b>Analitics Financeira</b>
     </div>
-    <div class="content" id="view"></div>
+    <div class="content">
+      <div class="sync-bar" id="syncBar" hidden><span data-i="alert"></span><span>Há alterações que ainda não foram salvas no servidor. O sistema está tentando de novo.</span><button class="btn btn-sm" id="syncRetry">Tentar agora</button></div>
+      <div id="view"></div>
+    </div>
   </main>
 </div>
 <div class="toasts" id="toasts"></div>
@@ -503,6 +511,8 @@ const ICONS = {
   alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
   file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/>',
   logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2A6.5 6.5 0 0 1 21.5 20"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 9.2-9.2M17 6l3 3M14.5 8.5l2 2"/>',
   link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
 };
 const ic = (n, s=16, w=1.8) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -524,6 +534,7 @@ const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{storage:window.sessionSt
 const TABLES = ['units', 'cards', 'expenses', 'flags'];
 let S = {units:[], cards:[], expenses:[], flags:[]};
 let synced = {};   // tabela -> Map(id -> JSON salvo no servidor)
+let me = {id:null, admin:false};   // usuário logado
 const normalize = () => {
   TABLES.forEach(t => S[t] ||= []);
   // Cartões guardam só bandeira e 4 últimos números
@@ -549,8 +560,34 @@ async function sync() {
     synced[t] = cur;
   }
 }
+const isAuthError = e => e && (e.status === 401 || e.code === 'PGRST301' || e.code === 'PGRST303' || /jwt|token|expired|not authenticated/i.test(e.message || ''));
+async function syncWithRetry() {
+  try { await sync(); }
+  catch(e) {
+    if (!isAuthError(e)) throw e;
+    // Login expirado: renova a sessão e tenta de novo
+    const {error} = await sb.auth.refreshSession();
+    if (error) { e.sessionExpired = true; throw e; }
+    await sync();
+  }
+}
 let saving = Promise.resolve();
-const save = () => (saving = saving.then(sync).catch(e => { console.error(e); toast('Não foi possível salvar no servidor. Verifique a conexão.', true); }));
+const save = () => (saving = saving.then(syncWithRetry).then(() => setSyncState(true)).catch(e => {
+  console.error('Falha ao salvar', e);
+  setSyncState(false);
+  if (e.sessionExpired) { toast('Sua sessão expirou. Entre novamente — nada do que você fez foi perdido nesta tela.', true, 8000); return; }
+  const why = !navigator.onLine ? 'sem conexão com a internet' : (e.message || e.code || 'erro desconhecido');
+  toast(`Não foi possível salvar no servidor (${why}). O sistema tentará de novo.`, true, 8000);
+}));
+// Aviso fixo enquanto houver alteração não salva; tenta de novo a cada 15 s e ao voltar a conexão
+let retryTimer = null;
+function setSyncState(ok) {
+  const bar = document.getElementById('syncBar');
+  if (bar) bar.hidden = ok;
+  clearInterval(retryTimer); retryTimer = null;
+  if (!ok) retryTimer = setInterval(save, 15000);
+}
+window.addEventListener('online', () => { if (!document.getElementById('syncBar')?.hidden) save(); });
 
 const MAX_FILE = 20 * 1024 * 1024;
 const DB = {
@@ -591,12 +628,12 @@ const BRANDS = ['Visa','Mastercard','Elo','Amex','Hipercard','Diners','Outra'];
 const cBrand = c => c.brand && c.brand !== 'Outra' ? c.brand : 'Cartão';
 const cLast4 = c => c.last4 || '----';
 
-function toast(msg, err) {
+function toast(msg, err, ms) {
   const t = document.createElement('div');
-  t.className = 'toast';
-  t.innerHTML = (err ? '' : ic('check', 15, 2.2)) + esc(msg);
+  t.className = 'toast' + (err ? ' err' : '');
+  t.innerHTML = (err ? ic('alert', 15, 2) : ic('check', 15, 2.2)) + esc(msg);
   document.getElementById('toasts').appendChild(t);
-  setTimeout(() => t.remove(), 2600);
+  setTimeout(() => t.remove(), ms || (err ? 5000 : 2600));
 }
 
 /* ================= Modal ================= */
@@ -640,6 +677,7 @@ function renderNav() {
     <a href="#/dashboard" class="${r.page==='dashboard'?'active':''}">${ic('chart')}Dashboard</a>
     <a href="#/overview" class="${r.page==='overview'?'active':''}">${ic('grid')}Visão geral</a>
     <a href="#/cards" class="${r.page==='cards'?'active':''}">${ic('card')}Cartões de crédito<span class="count">${S.cards.length||''}</span></a>
+    ${me.admin ? `<a href="#/users" class="${r.page==='users'?'active':''}">${ic('users')}Usuários</a>` : ''}
     <div class="nav-label">Unidades <button id="navAddUnit" title="Nova unidade" aria-label="Nova unidade">${ic('plus',14,2)}</button></div>
     ${units.length ? units.map(u => `<a href="#/unit/${u.id}" class="${r.page==='unit'&&r.id===u.id?'active':''}">${ic('building')}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.name)}</span><span class="count">${unitExpenses(u.id).length||''}</span></a>`).join('')
       : '<div class="nav-empty">Nenhuma unidade cadastrada.</div>'}`;
@@ -652,6 +690,7 @@ function render() {
   if (r.page === 'unit' && unit(r.id)) v.innerHTML = viewUnit(r.id);
   else if (r.page === 'cards') v.innerHTML = viewCards();
   else if (r.page === 'overview') v.innerHTML = viewOverview();
+  else if (r.page === 'users' && me.admin) { v.innerHTML = viewUsers(); loadUsers(); }
   else v.innerHTML = viewDashboard();
   bindView();
   document.getElementById('app').classList.remove('nav-open');
@@ -888,7 +927,7 @@ function unitForm(u) {
         location.hash = '#/unit/' + u.id; render();
       };
       o.querySelector('[data-ok]').onclick = go;
-      o.querySelectorAll('input').forEach(i => i.onkeydown = e => e.key==='Enter' && go());
+      o.querySelectorAll('input').forEach(i => i.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
     }
   });
 }
@@ -1046,6 +1085,104 @@ function flagsManager() {
   });
 }
 
+/* ================= Usuários ================= */
+const USER_ERRORS = {
+  USUARIO_EXISTE:'Já existe um usuário com esse nome.',
+  USUARIO_INVALIDO:'O usuário deve ter de 3 a 30 caracteres: letras, números, ponto, hífen ou sublinhado (sem espaços).',
+  SENHA_CURTA:'A senha precisa ter pelo menos 6 caracteres.',
+  SEM_PERMISSAO:'Somente o administrador pode gerenciar usuários.',
+  NAO_PODE_EXCLUIR_PROPRIO:'Você não pode excluir o seu próprio usuário.',
+  USUARIO_NAO_ENCONTRADO:'Usuário não encontrado.',
+};
+const userErr = error => USER_ERRORS[Object.keys(USER_ERRORS).find(k => error?.message?.includes(k))] || 'Não foi possível concluir. Verifique a conexão e tente novamente.';
+const fdatetime = d => d ? new Date(d).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : 'Nunca entrou';
+
+function viewUsers() {
+  return `<div class="page-head"><div><h1>Usuários</h1><p>Pessoas com acesso ao sistema. Todos veem os mesmos dados.</p></div>
+    <div class="actions"><button class="btn btn-primary" data-act="add-user">${ic('plus',15,2)}Novo usuário</button></div></div>
+    <div class="panel"><div id="usersBody"><div class="empty"><p style="margin:0">Carregando usuários…</p></div></div></div>`;
+}
+async function loadUsers() {
+  const {data, error} = await sb.rpc('mabe_list_users');
+  const box = document.getElementById('usersBody');
+  if (!box) return;
+  if (error) { box.innerHTML = `<div class="empty"><h3>Não foi possível carregar</h3><p>${esc(userErr(error))}</p></div>`; return; }
+  box.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Criado em</th><th>Último acesso</th><th></th></tr></thead><tbody>
+    ${data.map(u => `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><span class="avatar">${esc(u.username.slice(0,2))}</span><b style="font-weight:500">${esc(u.username)}</b>${u.id === me.id ? '<span class="tag" style="margin:0">Você</span>' : ''}</div></td>
+      <td>${u.is_admin ? `<span class="chip pix">${ic('key',12,2)}Administrador</span>` : '<span class="chip boleto">Usuário</span>'}</td>
+      <td class="date num">${fdatetime(u.created_at)}</td>
+      <td class="date num">${fdatetime(u.last_sign_in_at)}</td>
+      <td><div class="row-actions">
+        <button class="btn btn-sm" data-upass="${u.id}" data-uname="${esc(u.username)}">${ic('key',13)}Trocar senha</button>
+        ${u.id === me.id ? '' : `<button class="icon-btn del" data-udel="${u.id}" data-uname="${esc(u.username)}" title="Excluir" aria-label="Excluir usuário">${ic('trash',15)}</button>`}
+      </div></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="table-foot"><span>${data.length} usuário${data.length===1?'':'s'}</span><span>Login: usuário e senha definidos aqui</span></div>`;
+  box.querySelectorAll('[data-upass]').forEach(b => b.onclick = () => passwordForm(b.dataset.upass, b.dataset.uname));
+  box.querySelectorAll('[data-udel]').forEach(b => b.onclick = () => confirmDialog('Excluir usuário',
+    `O usuário <b>${esc(b.dataset.uname)}</b> perderá o acesso ao sistema. Os lançamentos feitos por ele continuam salvos.`, 'Excluir usuário', async () => {
+      const {error} = await sb.rpc('mabe_delete_user', {p_user_id:b.dataset.udel});
+      if (error) return toast(userErr(error), true);
+      toast('Usuário excluído'); loadUsers();
+    }));
+}
+const pwFields = (conf = true) => `
+  <div class="field full"><label>Senha</label><div class="pw"><input id="nuPass" type="password" autocomplete="new-password" maxlength="64"><button type="button" class="icon-btn" id="nuEye" aria-label="Mostrar senha">${ic('eye',16)}</button></div><div class="hint">Mínimo de 6 caracteres.</div></div>
+  ${conf ? '<div class="field full"><label>Confirmar senha</label><input id="nuConf" type="password" autocomplete="new-password" maxlength="64"></div>' : ''}`;
+function bindPw(o) {
+  o.querySelector('#nuEye').onclick = e => { const p = o.querySelector('#nuPass'), s = p.type === 'password'; p.type = s ? 'text' : 'password'; e.currentTarget.innerHTML = ic(s ? 'eyeOff' : 'eye', 16); };
+}
+function checkPw(o) {
+  const p = o.querySelector('#nuPass').value;
+  if (p.length < 6) { toast(USER_ERRORS.SENHA_CURTA, true); o.querySelector('#nuPass').focus(); return null; }
+  if (p !== o.querySelector('#nuConf').value) { toast('As senhas não conferem.', true); o.querySelector('#nuConf').focus(); return null; }
+  return p;
+}
+function userForm() {
+  modal({
+    title:'Novo usuário', sub:'A pessoa entra no site com este usuário e senha.',
+    body:`<div class="form-grid">
+      <div class="field full"><label>Usuário</label><input id="nuUser" maxlength="30" autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="Ex.: maria.silva"><div class="hint">De 3 a 30 caracteres, sem espaços: letras, números, ponto, hífen ou sublinhado.</div></div>
+      ${pwFields()}</div>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>Criar usuário</button>`,
+    onMount:(o, close) => {
+      bindPw(o);
+      const u = o.querySelector('#nuUser');
+      u.oninput = () => u.value = u.value.toLowerCase().replace(/\s/g, '');
+      o.querySelector('[data-ok]').onclick = async ev => {
+        const okBtn = ev.currentTarget;
+        if (!/^[a-z0-9._-]{3,30}$/.test(u.value)) { toast(USER_ERRORS.USUARIO_INVALIDO, true); return u.focus(); }
+        const p = checkPw(o); if (!p) return;
+        okBtn.disabled = true;
+        const {error} = await sb.rpc('mabe_create_user', {p_username:u.value, p_password:p});
+        okBtn.disabled = false;
+        if (error) return toast(userErr(error), true);
+        close(); toast('Usuário criado'); loadUsers();
+      };
+    }
+  });
+}
+function passwordForm(id, name) {
+  modal({
+    title:'Trocar senha', sub:`Nova senha para ${name}.`,
+    body:`<div class="form-grid">${pwFields()}</div>`,
+    foot:`<button class="btn" data-close>Cancelar</button><button class="btn btn-primary" data-ok>Salvar nova senha</button>`,
+    onMount:(o, close) => {
+      bindPw(o);
+      o.querySelector('[data-ok]').onclick = async ev => {
+        const okBtn = ev.currentTarget;
+        const p = checkPw(o); if (!p) return;
+        okBtn.disabled = true;
+        const {error} = await sb.rpc('mabe_set_password', {p_user_id:id, p_password:p});
+        okBtn.disabled = false;
+        if (error) return toast(userErr(error), true);
+        close(); toast('Senha alterada');
+      };
+    }
+  });
+}
+
 /* ================= Recibos ================= */
 function extOf(name) { const m = /\.([a-z0-9]+)$/i.exec(name); return m ? m[1].toUpperCase().slice(0,4) : 'ARQ'; }
 function attachments(expId) {
@@ -1110,6 +1247,7 @@ function bindView() {
     if (a === 'link-cards') linkCards(r.id);
     if (a === 'add-card') cardForm();
     if (a === 'flags') flagsManager();
+    if (a === 'add-user') userForm();
     if (a === 'del-unit') {
       const u = unit(r.id), n = unitExpenses(u.id).length;
       confirmDialog('Excluir unidade', `A unidade <b>${esc(u.name)}</b>${n ? ` e seus ${n} lançamento${n===1?'':'s'} (com recibos)` : ''} será${n?'ão':''} excluída${n?'s':''}. Essa ação não pode ser desfeita.`, 'Excluir unidade', () => {
@@ -1196,7 +1334,10 @@ let firstAccess = false;
 async function enterApp(user) {
   const btn = document.getElementById('lBtn');
   btn.disabled = true; btn.textContent = 'Carregando dados…';
-  try { await loadAll(); }
+  try {
+    const [, adm] = await Promise.all([loadAll(), sb.rpc('mabe_is_admin')]);
+    me = {id:user.id, admin: adm.data === true};
+  }
   catch(e) { showLogin(); return loginErr('Não foi possível carregar os dados. Verifique a conexão e tente novamente.'); }
   finally { btn.disabled = false; }
   const name = userName(user);
@@ -1264,15 +1405,17 @@ document.getElementById('btnLogout').onclick = async () => {
   document.querySelectorAll('.overlay').forEach(o => o.remove());
   await saving;
   await sb.auth.signOut();
-  S = {units:[], cards:[], expenses:[], flags:[]}; synced = {};
+  S = {units:[], cards:[], expenses:[], flags:[]}; synced = {}; me = {id:null, admin:false};
   showLogin();
 };
 
 /* ================= Início ================= */
 document.getElementById('menuBtn').onclick = () => document.getElementById('app').classList.add('nav-open');
 document.getElementById('scrim').onclick = () => document.getElementById('app').classList.remove('nav-open');
+document.getElementById('syncRetry').onclick = () => save();
 document.addEventListener('visibilitychange', async () => {
-  if (document.visibilityState !== 'visible' || document.getElementById('app').hidden || document.querySelector('.overlay')) return;
+  // Não recarrega do servidor enquanto houver alteração não salva (senão ela sumiria da tela)
+  if (document.visibilityState !== 'visible' || document.getElementById('app').hidden || document.querySelector('.overlay') || !document.getElementById('syncBar').hidden) return;
   try { await saving; await loadAll(); render(); } catch(e) {}
 });
 (async () => {
